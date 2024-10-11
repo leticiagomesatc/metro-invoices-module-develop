@@ -1,0 +1,153 @@
+
+<mat-expansion-panel *ngIf="hasExtensionPanel">
+    <mat-expansion-panel-header class="principal " >
+        <mat-panel-title class="generic-header">
+                {{props('title')}}
+        </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <div class="search-filters">
+
+        <!-- <template [ngTemplateOutlet]="templateVariable" [ngOutletContext]="{filters: filters}"></template> -->
+        <ng-content  >
+
+        </ng-content>
+    </div>
+    <mat-action-row align="end">
+        <mat-progress-spinner
+            style="margin-right: 15px"
+            [hidden]="hideSpinnerSearch"
+            color="accent"
+            mode="indeterminate"
+            diameter="40"
+            strokeWidth="5">
+        </mat-progress-spinner>
+        <button mat-raised-button class="primary btn-main"  (click)="search()" [disabled]="!hideSpinnerSearch">Pesquisar</button>
+        <button mat-button class="secondary-dark btn-main"   (click)="clear()" [disabled]="!hideSpinnerSearch">Limpar</button>
+    </mat-action-row>
+</mat-expansion-panel>
+
+<mat-card *ngIf="!dataSource.data || dataSource.data.length ==0">
+    Não foram encontrados resultados para a pesquisa.
+</mat-card>
+
+<div class="mat-elevation-z8" class="search-results" *ngIf="!!dataSource.data && dataSource.data.length > 0" >
+    <table mat-table matSort (matSortChange)="sortData($event, true)" class="search-results" [dataSource]="dataSource" multiTemplateDataRows>
+
+        <ng-content select="[addCols]"></ng-content>
+
+        <ng-container [matColumnDef]="'selection'">
+            <th mat-header-cell *matHeaderCellDef class="generic-header"> <mat-checkbox #selectorAll (change)="checkUncheckAll($event)"></mat-checkbox> </th>
+            <td mat-cell *matCellDef="let element"><mat-checkbox *ngIf="checkSelectionCondition(element)" (change)="selectItem(element, $event)" [checked]="element.checked"></mat-checkbox></td>
+        </ng-container>
+
+        <div *ngIf="!hasOrding">
+            <ng-container  *ngFor="let col of getAvailableCols()"  [matColumnDef]="col.prop">
+                <th mat-header-cell *matHeaderCellDef class="generic-header"> {{renderColTitle(col)}} </th>
+                <td mat-cell *matCellDef="let element">
+                    <div matTooltip="{{renderColHintValue(col, element, i)}}" (matTooltipDisabled)="renderColHint(col, element, false)"
+                        [matTooltipShowDelay]="500" [matTooltipHideDelay]="500"
+                        [innerHTML]="renderColValue(col, element, i)"></div>
+                    <mat-icon matTooltip="{{renderColHintValue(col, element, i)}}" [matTooltipShowDelay]="500"
+                        [matTooltipHideDelay]="500" *ngIf="renderColHint(col, element, true) && !typeTooltip()" class="tooltip">error</mat-icon>
+                    <mat-icon matTooltip="{{renderColHintValue(col, element, i)}}" [matTooltipShowDelay]="500"
+                        [matTooltipHideDelay]="500" *ngIf="renderColHint(col, element, true) && typeTooltip()" class="tooltip">help_outline</mat-icon>
+                </td>
+            </ng-container>
+        </div>
+
+        <div *ngIf="hasOrding">
+            <ng-container  *ngFor="let col of getAvailableCols()"  [matColumnDef]="col.prop">
+                <th mat-header-cell *matHeaderCellDef class="generic-header" mat-sort-header> {{renderColTitle(col)}} </th>
+                <td mat-cell *matCellDef="let element">
+                    <div matTooltip="{{renderColHintValue(col, element, i)}}" (matTooltipDisabled)="renderColHint(col, element, false)"
+                        [matTooltipShowDelay]="500" [matTooltipHideDelay]="500"
+                        [innerHTML]="renderColValue(col, element, i)"></div>
+                    <mat-icon matTooltip="{{renderColHintValue(col, element, i)}}" [matTooltipShowDelay]="500"
+                        [matTooltipHideDelay]="500" *ngIf="renderColHint(col, element, true) && !typeTooltip()" class="tooltip">error</mat-icon>
+                    <mat-icon matTooltip="{{renderColHintValue(col, element, i)}}" [matTooltipShowDelay]="500"
+                        [matTooltipHideDelay]="500" *ngIf="renderColHint(col, element, true) && typeTooltip()" class="tooltip">help_outline</mat-icon>
+                </td>
+            </ng-container>
+        </div>
+
+        <ng-container  *ngFor="let act of getActions()"  [matColumnDef]="act.action">
+            <th mat-header-cell *matHeaderCellDef class="generic-header"> {{renderColTitle(act,'action')}} </th>
+            <td mat-cell *matCellDef="let line">
+                <button mat-icon-button *ngIf="!act.subActions" (click)="execute(act, line, i)" title="{{renderColValue(act, line, i, 'action')}}" >
+                    <mat-icon  *ngIf="hasIcon(act)">{{renderIconName(act)}}</mat-icon>
+                </button>
+                <button mat-icon-button [matMenuTriggerFor]="contextMenu" [matMenuTriggerData]="{item: line, action: act}" *ngIf="!!act.subActions && act.subActions.length > 0 && checkSelectionCondition(line)"
+                        [disabled]="!hideSpinnerMenu || !hideSpinnerSearch">
+                    <mat-icon>more_horiz</mat-icon>
+                </button>
+            </td>
+        </ng-container>
+
+        <ng-container matColumnDef="expandedDetail" *ngIf="expand">
+            <td mat-cell [hidden]="element != expandedElement" *matCellDef="let element" [attr.colspan]="getAvailableCols().length + 1">
+                <div class="example-element-detail" [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+                    <table *ngIf="element == expandedElement" mat-table class="search-results" [dataSource]="billetsDataSource">
+
+                        <ng-container  *ngFor="let col of getInnerAvailableCols()"  [matColumnDef]="col.prop">
+                            <th mat-header-cell *matHeaderCellDef class="generic-header"> {{renderColTitle(col)}} </th>
+                            <td mat-cell *matCellDef="let element">
+                                <mat-icon *ngIf="col.prop === 'noteNumber'" [matTooltipDisabled]="col.prop != 'noteNumber' ? true : false" matTooltipClass="mat-tooltip" matTooltip="{{noteNumbersFromBillet(col, element)}}">reorder</mat-icon>
+                                <label *ngIf="col.prop != 'noteNumber'">{{renderColValue(col, element, i)}}</label>
+                            </td>
+                        </ng-container>
+
+                        <ng-container  *ngFor="let act of getInnerActions()"  [matColumnDef]="act.action">
+                            <th mat-header-cell *matHeaderCellDef class="generic-header"> {{renderColTitle(act,'action')}} </th>
+                            <td mat-cell *matCellDef="let innerLine">
+                                <button mat-icon-button [matMenuTriggerFor]="contextMenu" [matMenuTriggerData]="{item: innerLine, action: act}" *ngIf="!!act.subActions && act.subActions.length > 0">
+                                    <mat-icon>more_horiz</mat-icon>
+                                </button>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="innerDisplayedColumns" class="generic-header-inner-list"></tr>
+                        <tr mat-row *matRowDef="let innerLine; columns: innerDisplayedColumns" ></tr>
+                    </table>
+                    <mat-menu #innerContextMenu="matMenu">
+                        <ng-template matMenuContent let-item="item" let-action="action">
+                            <button mat-menu-item *ngFor="let subAct of getSubActions(action, item)" (click)="element.search.execute(subAct, item, i)">
+                                <mat-icon *ngIf="element.search.hasIcon(subAct)">{{renderIconName(subAct)}}</mat-icon>
+                                {{renderColValue(subAct, item, i, 'action')}}
+                            </button>
+                        </ng-template>
+                    </mat-menu>
+                    <!-- <ng-template fw-search-inner-row></ng-template> -->
+                </div>
+            </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns" class="generic-header"></tr>
+        <tr mat-row *matRowDef="let line; columns: displayedColumns;"
+            class="example-element-row"
+            [class.example-expanded-row]="expandedElement === line"
+            (click)="expandRow(line, $event);" ></tr>
+        <ng-container *ngIf="expand">
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
+        </ng-container>
+    </table>
+
+    <mat-menu #contextMenu="matMenu">
+        <ng-template matMenuContent let-item="item" let-action="action">
+            <button mat-menu-item *ngFor="let subAct of getSubActions(action, item)" (click)="execute(subAct, item, i)">
+                <mat-icon *ngIf="hasIcon(subAct)">{{renderIconName(subAct)}}</mat-icon>
+                {{renderColValue(subAct, item, i, 'action')}}
+            </button>
+        </ng-template>
+    </mat-menu>
+
+    <div *ngIf="hasPaginator">
+        <mat-paginator
+            #paginator
+            (page)="onPageEvent($event)"
+            [pageSize]="pageable.size"
+            [pageSizeOptions]="[10, 50, 100]"
+            [length]="page?.totalElements" >
+        </mat-paginator>
+    </div>
+</div>

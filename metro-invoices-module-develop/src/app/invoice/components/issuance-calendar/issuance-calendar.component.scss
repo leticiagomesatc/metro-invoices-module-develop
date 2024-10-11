@@ -1,0 +1,38 @@
+.generic-header {
+    color: white !important;
+}
+
+.mat-expansion-panel {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.width15em {
+    width: 15em;
+}
+
+.width17em {
+    width: 17em;
+}
+
+mat-checkbox {
+    margin-top: unset;
+}
+
+.cal-day-badge {
+    font-size: 2em;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    padding: 7% 19%; 
+}
+
+.cal-cell-top {
+    position: relative;
+}
+
+.unset {
+    margin-top: unset;
+    margin-left: unset;
+}
+

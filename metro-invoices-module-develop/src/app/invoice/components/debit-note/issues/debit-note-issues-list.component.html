@@ -1,0 +1,139 @@
+
+<button mat-fab class="fab-button fab-top" [matMenuTriggerFor]="matBulkMenu" 
+        *ngIf="authService.hasAllRoles(userRoles.allDebitNotesActionRoles)" [disabled]="!search.hideSpinnerMenu || !search.hideSpinnerSearch">
+    <mat-icon *ngIf="search.hideSpinnerMenu">more_horiz</mat-icon>
+    <mat-progress-spinner
+        style="bottom: 8px"
+        *ngIf="!search.hideSpinnerMenu"
+        color="accent"
+        mode="indeterminate"
+        diameter="40"
+        strokeWidth="5">
+    </mat-progress-spinner>
+</button>
+
+<mat-menu #matBulkMenu="matMenu">
+    <button mat-menu-item (click)="newIssue()" *ngIf="authService.hasRole(userRoles.dbIssueEmit)">
+        <mat-icon>date_range</mat-icon>
+        Emitir Nota de Débito
+    </button>
+    <button mat-menu-item (click)="validateAndSendBilletNoteEmail(undefined)" *ngIf="authService.hasRole(userRoles.dbIssueSend)">
+        <mat-icon>send</mat-icon>
+        Enviar Nota de Débito/Boleto em E-mail
+    </button>
+    <button mat-menu-item (click)="validateAndSendBilletEmail(undefined)" *ngIf="authService.hasRole(userRoles.dbIssueSend)">
+        <mat-icon>send</mat-icon>
+        Enviar boleto por E-mail
+    </button>
+    <button mat-menu-item (click)="openZip()" *ngIf="authService.hasRole(userRoles.dbIssueDownload)">
+        <mat-icon>cloud_download</mat-icon>
+        Download ZIP
+    </button>
+</mat-menu>
+
+<fw-search 
+    class="main-div"
+    [options]="{title:'Listar Emissões de Notas de Débito'}" 
+    path="debit-notes/issues" 
+    [cols]="cols" 
+    [actions]="actions"
+    [enableSelection]="true"
+    (onAction)="execute($event)"
+    [addFields]="['status','note.id', 'id','existsPayedBillet', 'period', 'quantityBillets', 'cancelDate']"
+    #search>
+
+    <form class="example-form">
+
+<!--
+ 
+Data de emissão 
+Tipo de Nota de Débito 
+Situação do envio de e-mail da nota de débito 
+Situação pagamento: Pago/Pendente 
+Número nota de débito 
+Notas canceladas [checkbox] 
+
+--> 
+        <div fxLayout="row" fxLayoutGap="20px">
+           
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="codSap"  placeholder="Código do Cliente" [(ngModel)]="search.filters.customerSapCode">
+            </mat-form-field>
+            
+            <fw-autocomplete 
+                fxFlex="4 1 auto" 
+                flex="4 1 auto" 
+                label="Grupo de Faturamento" 
+                path="customers" 
+                mapAs="id"
+                [subscribeTo]="search"
+                [(value)]="search.filters.customer">
+            </fw-autocomplete>
+            
+           
+           
+        </div>
+
+        <div fxLayout="row" fxLayoutGap="20px">
+            
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-label>Tipo de Nota de Débito</mat-label>
+                <mat-select [(value)]="search.filters.type"  style=" margin-top: 15px"> 
+                    <mat-option>Todos</mat-option>
+                    <mat-option value="ACCOUNTS_MEETING">Encontro de contas</mat-option>
+                    <mat-option value="FINE">Multa</mat-option>
+                    <mat-option value="PAYMENT">Pagamento</mat-option>
+                    <mat-option value="PREPAYMENT">Pagamento Antecipado</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-label>Situação do Envio de E-mail</mat-label>
+                <mat-select [(value)]="search.filters.emailStatus" style=" margin-top: 15px">
+                    <mat-option>Todos</mat-option>
+                    <mat-option value="NAO_ENVIADO">Não Enviado</mat-option>
+                    <mat-option value="ENVIANDO">Enviando</mat-option>
+                    <mat-option value="ENVIADO">Enviado</mat-option>
+                    <mat-option value="ERRO">Erro</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-label>Status de Pagamento</mat-label>
+                <mat-select [(value)]="search.filters.paymentStatus"  style=" margin-top: 15px"> 
+                    <mat-option>Todos</mat-option>
+                    <mat-option value="OPEN">Em Aberto</mat-option>
+                    <mat-option value="EXPIRED">Vencido</mat-option>
+                    <mat-option value="PAYED">Pago</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            
+            
+        </div>
+
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="number" [numberMaxLength]="9" [onlyInt]="true"   placeholder="Número da Nota de Débito" [(ngModel)]="search.filters.number">
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="memStart" [matDatepicker]="myDatepicker" placeholder="Data de emissão"
+                    [(ngModel)]="search.filters.issueDate" autocomplete="off" readonly>
+                <mat-datepicker-toggle matSuffix [for]="myDatepicker"></mat-datepicker-toggle>
+                <mat-datepicker #myDatepicker disabled="false"></mat-datepicker>
+                <button *ngIf="!!search.filters.issueDate " mat-icon-button matSuffix (click)="search.filters.issueDate = null" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-form-field>
+
+            <mat-checkbox fxFlex="1 1 auto" matInput name="active" 
+                
+                [(ngModel)]="search.filters.showCanceled">Canceladas?</mat-checkbox>
+
+        </div>
+
+        
+    </form>
+    
+</fw-search>

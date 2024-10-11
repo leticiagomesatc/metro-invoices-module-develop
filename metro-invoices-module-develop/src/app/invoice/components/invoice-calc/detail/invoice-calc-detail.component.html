@@ -1,0 +1,271 @@
+<fw-edit style="margin-top: 30px !important;"
+    [options]="{
+        insertTitle:'Editar Memória de Cálculo',
+        buttonSave: 'Salvar'
+    }"
+    path="invoice-calc/edit/items"
+    messageSave='AT-S005'
+    routeTo="invoice-calc"
+    [form]="form"
+    (onSave)="onSaveInvoice()"
+    [serializeFn]="serializeFn"
+    [validateFn]="validateForm"
+    [onSavePromise]="onSavePromise"
+    overflowClass="true"
+    #edit>
+    <div class="mat-elevation-z8" class="search-results">
+      <button title="Incluir" mat-fab (click)="newInvoiceItem()" color="primary" style="background-color: #616161">
+        <mat-icon id="mat-icon-save">add</mat-icon>
+      </button>
+      <table mat-table [dataSource]="dataSource">
+
+        <ng-container matColumnDef="customer">
+          <th mat-header-cell *matHeaderCellDef> Grupo de Faturamento </th>
+          <td mat-cell *matCellDef="let element"> {{element.customer}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="os_description">
+          <th mat-header-cell *matHeaderCellDef> Nº OS </th>
+          <td mat-cell *matCellDef="let element"> {{element.osDescription}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="designation">
+          <th mat-header-cell *matHeaderCellDef> Designação </th>
+          <td mat-cell *matCellDef="let element">
+            <div *ngIf="!element.edit">
+              {{ element.designation }}
+            </div>
+            <div *ngIf="element.edit">
+              <input matInput type="text" placeholder="Designação"
+                [(ngModel)]="designation"
+                [formControl]="designationControl"
+                [matAutocomplete]="autoCustomer" autocomplete="off">
+              <mat-autocomplete style="width: auto;"#autoCustomer="matAutocomplete" [displayWith]="displayDesignation" (optionSelected)="selectDesignation($event.option.value)">
+                <mat-option *ngFor="let designation of filteredCircuit | async" [value]="designation">
+                    {{ designation.name }}
+                </mat-option>
+              </mat-autocomplete>
+              <mat-checkbox (change)="filterDisabled($event);" *ngIf="!element.blockCheckDisabled" [formControl]="exbDisabled">Exibir Desativados?</mat-checkbox>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="typeService">
+          <th mat-header-cell *matHeaderCellDef> Tipo de Atendimento </th>
+          <td mat-cell *matCellDef="let element">{{element.typeService}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="dateActivation">
+          <td mat-cell *matCellDef="let element">
+
+            <mat-form-field  floatLabel="never">
+              <input matInput [matDatepicker]="crtdControl" (dateInput)="chosenDateHandlerCrtd($event, element)" [disabled]="true" style="text-align: center" matInput [value]="element.dateActivation">
+              <mat-datepicker-toggle matSuffix [for]="crtdControl"></mat-datepicker-toggle>
+              <mat-datepicker #crtdControl startView="multi-year" [disabled]="!element.edit"
+                (yearSelected)="chosenYearHandlerCrtd($event, element)"
+                (monthSelected)="chosenMonthHandlerCrtd($event, element)">
+              </mat-datepicker>
+            </mat-form-field>
+
+          </td>
+          <th mat-header-cell *matHeaderCellDef> Data da Ativação </th>
+        </ng-container>
+
+        <ng-container matColumnDef="monthlyValueView">
+          <td mat-cell *matCellDef="let element">
+            <mat-form-field  floatLabel="never">
+              <input [disabled]="!element.edit" matInput type="text" style="text-align: center" (keyup)="convertMonthlyValue(element.monthlyValueView)" (keypress)="convertMonthlyValue(element.monthlyValueView)" [(ngModel)]="element.monthlyValueView">
+
+            </mat-form-field>
+          </td>
+          <th mat-header-cell *matHeaderCellDef> Valor Mensal </th>
+        </ng-container>
+
+        <ng-container matColumnDef="activationValueView">
+          <td mat-cell *matCellDef="let element">
+            <mat-form-field  floatLabel="never">
+              <input [disabled]="!element.edit || element.blockActivationTax" matInput type="text" style="text-align: center" (keyup)="convertActivationValue(element.activationValueView)" (keypress)="convertActivationValue(element.activationValueView)" [(ngModel)]="element.activationValueView">
+            </mat-form-field>
+          </td>
+          <th mat-header-cell *matHeaderCellDef> Valor da Ativação </th>
+        </ng-container>
+
+        <ng-container matColumnDef="activationInstallment">
+          <td mat-cell *matCellDef="let element">
+            <mat-form-field  floatLabel="never" *ngIf="element.edit && !element.blockActivationTax">
+              <input matInput [(ngModel)]="element.activationInstallment" [specialCharacters]="[ '/' ]" [dropSpecialCharacters]="false" mask="09/09" style="text-align: center" (change)="onChangeActivationInstallment($event)">
+            </mat-form-field>
+            <mat-form-field  floatLabel="never" *ngIf="!element.edit">
+              <input matInput [(ngModel)]="element.activationInstallment" style="text-align: center" disabled="true">
+            </mat-form-field>
+          </td>
+          <th mat-header-cell *matHeaderCellDef> Parcela Taxa Ativação </th>
+        </ng-container>
+
+        <ng-container matColumnDef="dateDeactivation">
+          <td mat-cell *matCellDef="let element">
+
+            <mat-form-field  floatLabel="never">
+              <input matInput [matDatepicker]="crtdControlDeact"  (dateInput)="chosenDateHandlerCrtdDeact($event, element)" [disabled]="true" style="text-align: center" matInput [value]="parseDate(element.dateDeactivation)">
+              <mat-datepicker-toggle matSuffix [for]="crtdControlDeact"></mat-datepicker-toggle>
+              <mat-datepicker #crtdControlDeact startView="multi-year" [disabled]="!element.edit"
+                (yearSelected)="chosenYearHandlerCrtdDeact($event, element)"
+                (monthSelected)="chosenMonthHandlerCrtdDeact($event, element)">
+              </mat-datepicker>
+            </mat-form-field>
+
+          </td>
+          <th mat-header-cell *matHeaderCellDef> Data Desativação </th>
+        </ng-container>
+
+        <ng-container matColumnDef="dateCancelation">
+          <td mat-cell *matCellDef="let element">
+            <mat-form-field  floatLabel="never">
+              <input matInput [matDatepicker]="crtdControlCancel" (dateInput)="chosenDateHandlerCrtdCancel($event, element)" [disabled]="true" style="text-align: center" matInput [value]="parseDate(element.dateCancelation)">
+              <mat-datepicker-toggle matSuffix [for]="crtdControlCancel"></mat-datepicker-toggle>
+              <mat-datepicker #crtdControlCancel startView="multi-year" [disabled]="!element.edit"
+                (yearSelected)="chosenYearHandlerCrtdCancel($event, element)"
+                (monthSelected)="chosenMonthHandlerCrtdCancel($event, element)"
+                >
+              </mat-datepicker>
+            </mat-form-field>
+          </td>
+          <th mat-header-cell *matHeaderCellDef> Data Cancelamento </th>
+        </ng-container>
+
+        <ng-container matColumnDef="quantityDayProRata">
+          <td mat-cell *matCellDef="let element">
+            <mat-form-field floatLabel="never">
+              <input [disabled]="!element.edit" matInput type="text" mask="99" style="text-align: center" [(ngModel)]="element.quantityDayProRata">
+            </mat-form-field>
+          </td>
+          <th mat-header-cell *matHeaderCellDef> Quantidade Dia Pro Rata </th>
+        </ng-container>
+
+        <ng-container matColumnDef="firstCollectionDay">
+          <td mat-cell *matCellDef="let element">
+
+            <mat-form-field  floatLabel="never">
+              <input matInput [matDatepicker]="crtdControlDeact"  (dateInput)="chosenDateHandlerCrtdFirstCollection($event, element)" [disabled]="true" style="text-align: center" matInput [value]="parseDate(element.firstCollectionDay)">
+              <mat-datepicker-toggle matSuffix [for]="crtdControlDeact"></mat-datepicker-toggle>
+              <mat-datepicker #crtdControlDeact startView="multi-year" [disabled]="!element.edit"
+                (yearSelected)="chosenYearHandlerFirstCollection($event, element)"
+                (monthSelected)="chosenMonthHandlerFirstCollection($event, element)">
+              </mat-datepicker>
+            </mat-form-field>
+
+          </td>
+          <th mat-header-cell *matHeaderCellDef> Data início Cobrança </th>
+        </ng-container>
+
+        <ng-container matColumnDef="lastCollectionDay">
+          <td mat-cell *matCellDef="let element">
+
+            <mat-form-field  floatLabel="never">
+              <input matInput [matDatepicker]="crtdControlDeact"  (dateInput)="chosenDateHandlerCrtdLastCollection($event, element)" [disabled]="true" style="text-align: center" matInput [value]="parseDate(element.lastCollectionDay)">
+              <mat-datepicker-toggle matSuffix [for]="crtdControlDeact"></mat-datepicker-toggle>
+              <mat-datepicker #crtdControlDeact startView="multi-year" [disabled]="!element.edit"
+                (yearSelected)="chosenYearHandlerLastCollection($event, element)"
+                (monthSelected)="chosenMonthHandlerLastCollection($event, element)">
+              </mat-datepicker>
+            </mat-form-field>
+
+          </td>
+          <th mat-header-cell *matHeaderCellDef> Data Fim Cobrança </th>
+        </ng-container>
+
+
+        <ng-container matColumnDef="monthlyValueLiqView">
+          <td mat-cell *matCellDef="let element">
+            <mat-form-field  floatLabel="never">
+              <input [disabled]="!element.edit" matInput type="text" style="text-align: center" (keyup)="convertMonthValueLiq(element.monthlyValueLiqView)" (keypress)="convertMonthValueLiq(element.monthlyValueLiqView)" [(ngModel)]="element.monthlyValueLiqView">
+            </mat-form-field>
+          </td>
+          <th mat-header-cell *matHeaderCellDef> Valor Mensal Líquido </th>
+        </ng-container>
+
+        <ng-container matColumnDef="monthlyValueBrut">
+          <th mat-header-cell *matHeaderCellDef> Valor Mensal Bruto </th>
+          <td mat-cell *matCellDef="let element" style="text-align: center">{{currencyConv(element.monthlyValueBrut)}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="activationValueLiq">
+          <th mat-header-cell *matHeaderCellDef> Taxa Ativação Líquido </th>
+          <td mat-cell *matCellDef="let element" style="text-align: center">{{currencyConv(element.activationValueLiq)}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="activationValueBrut">
+          <th mat-header-cell *matHeaderCellDef> Taxa Ativação Bruto </th>
+          <td mat-cell *matCellDef="let element" style="text-align: center">{{currencyConv(element.activationValueBrut)}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="total">
+          <th mat-header-cell *matHeaderCellDef> Total </th>
+          <td mat-cell *matCellDef="let element" style="text-align: center">{{currencyConv(element.total)}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef class="generic-header">Ação</th>
+          <td mat-cell *matCellDef="let element">
+            <div *ngIf="!element.edit" style="display: flex;">
+              <mat-icon title="Excluir" aria-hidden="true"  class="cursor" (click)="openConfirmDeleteItem(element)">delete</mat-icon>
+              <mat-icon title="Editar" class="cursor" (click)="onEditItem(element)">edit</mat-icon>
+            </div>
+
+            <div *ngIf="element.edit" style="display: flex;">
+              <mat-icon title="Cancelar" id="mat-icon-cancel" class="cursor" (click)="onCancelItem(element)">clear</mat-icon>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+
+      <form class="example-form" [formGroup]="form">
+        <div fxLayout="row" fxLayoutAlign="end center">
+          <div style="background-color: #CC0026; color: white; padding-top: 10px; padding-bottom: 10px; padding-right: 10px; padding-left: 10px;">
+            <mat-label>Desconto/Penalidade</mat-label>
+          </div>
+          <div style="border-style: solid; border-width: 1px 1px; border-color: darkgray;">
+            <input type="text" disabled="false" matInput style="padding-top: 3px; padding-left: 5px;" (focus)="saveCurrentItem(true)"
+              formControlName="penaltyDiscountAmountView" (input)="changeUnitValue('penaltyDiscountAmountView');">
+          </div>
+          <div style="border-style: solid; border-width: 1px 1px; border-color: darkgray;">
+            <input type="text" matInput style="padding-top: 3px; padding-left: 5px;"
+              mask="dot_separator.2" disabled="true" [value]="penaltyDiscountAmountGrossStr">
+          </div>
+          <div>
+            <mat-form-field *ngIf="discountTypeYes" style="width: 400px; padding-left: 20px;">
+              <mat-select [required]="discountTypeYes" formControlName="discountType">
+                 <mat-option *ngFor="let discount of discountType" [value]="discount">
+                  {{discount.dscDiscountType}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div fxLayout="row" fxLayoutAlign="end center" style="padding-top: 20px;">
+          <div style="background-color: #CC0026; color: white; padding-top: 10px; padding-bottom: 10px; padding-right: 10px; padding-left: 10px;">
+            <mat-label>Desconto por interrupção</mat-label>
+          </div>
+          <div style="border-style: solid; border-width: 1px 1px; border-color: darkgray;">
+            <input type="text" matInput style="padding-top: 3px; padding-left: 5px;"
+              mask="dot_separator.2" disabled="true" [value]="automaticPenaltyDiscount">
+          </div>
+        </div>
+
+        <div fxLayout="row" fxLayoutAlign="end center" style="padding-top: 20px;">
+            <div style="background-color: #CC0026; color: white; padding-top: 10px; padding-bottom: 10px; padding-right: 10px; padding-left: 10px;">
+              <mat-label>Total Geral</mat-label>
+            </div>
+            <div style="border-style: solid; border-width: 1px 1px; border-color: darkgray;">
+              <input type="text" disabled="true" [value]="generalTotalStr" matInput style="padding-top: 3px; padding-left: 5px;">
+            </div>
+        </div>
+    </form>
+
+    </div>
+</fw-edit>

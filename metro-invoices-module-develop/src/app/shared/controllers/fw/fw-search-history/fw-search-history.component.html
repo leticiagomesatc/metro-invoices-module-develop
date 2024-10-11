@@ -1,0 +1,238 @@
+
+<mat-expansion-panel *ngIf="hasExtensionPanel">
+    <mat-expansion-panel-header class="principal " >
+        <mat-panel-title class="generic-header">
+                {{props('title')}}
+        </mat-panel-title>
+    </mat-expansion-panel-header>
+        
+    <div class="search-filters">
+
+        <!-- <template [ngTemplateOutlet]="templateVariable" [ngOutletContext]="{filters: filters}"></template> -->
+        <ng-content  >
+
+        </ng-content>
+    </div>
+    <mat-action-row align="end">
+        <mat-progress-spinner
+            style="margin-right: 15px"
+            [hidden]="hideSpinnerSearch"
+            color="accent"
+            mode="indeterminate"
+            diameter="40"
+            strokeWidth="5">
+        </mat-progress-spinner>
+        <button mat-raised-button class="primary btn-main"  (click)="search()" [disabled]="!hideSpinnerSearch">Pesquisar</button>
+        <button mat-button class="secondary-dark btn-main"   (click)="clear()" [disabled]="!hideSpinnerSearch">Limpar</button>
+    </mat-action-row>
+</mat-expansion-panel>
+    
+<mat-card *ngIf="!dataSource.data || dataSource.data.length ==0">
+    Não foram encontrados resultados para a pesquisa.
+</mat-card>
+    
+<div class="mat-elevation-z8" class="search-results" *ngIf="!!dataSource.data && dataSource.data.length > 0" >
+    <table mat-table  class="search-results" [dataSource]="dataSource" multiTemplateDataRows>
+    
+        <ng-content select="[addCols]"></ng-content>
+    
+        <ng-container [matColumnDef]="'selection'">
+            <th mat-header-cell *matHeaderCellDef class="generic-header"> <mat-checkbox #selectorAll (change)="checkUncheckAll($event)"></mat-checkbox> </th>
+            <td mat-cell *matCellDef="let element"><mat-checkbox *ngIf="checkSelectionCondition(element)" (change)="selectItem(element, $event)" [checked]="element.checked"></mat-checkbox></td>
+        </ng-container>
+    
+        <ng-container  *ngFor="let col of getAvailableCols()"  [matColumnDef]="col.prop">
+            <th mat-header-cell *matHeaderCellDef class="generic-header"> {{renderColTitle(col)}} </th>
+            <td mat-cell *matCellDef="let element"> 
+                <div [innerHTML]="renderColValue(col, element, i)"></div>
+                <mat-icon matTooltip="{{renderColHintValue(col, element, i)}}"  *ngIf="renderColHint(col, element)" class="tooltip">error</mat-icon>
+            </td>
+        </ng-container>
+    
+        <ng-container  *ngFor="let act of getActions()"  [matColumnDef]="act.action">
+            <th mat-header-cell *matHeaderCellDef class="generic-header"> {{renderColTitle(act,'action')}} </th>
+            <td mat-cell *matCellDef="let line"> 
+                <button mat-icon-button *ngIf="!act.subActions" (click)="execute(act, line, i)" title="{{renderColValue(act, line, i, 'action')}}" >
+                    <mat-icon  *ngIf="hasIcon(act)">{{renderIconName(act)}}</mat-icon>
+                </button>
+                <button mat-icon-button [matMenuTriggerFor]="contextMenu" [matMenuTriggerData]="{item: line, action: act}" *ngIf="!!act.subActions && act.subActions.length > 0">
+                    <mat-icon>more_horiz</mat-icon>
+                </button>
+            </td>
+        </ng-container>
+                
+        <ng-container matColumnDef="expandedDetail" *ngIf="expand">
+            <td mat-cell [hidden]="element != expandedElement" *matCellDef="let element" [attr.colspan]="getAvailableCols().length + 1">
+                <div class="example-element-detail margin-inner-content" [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+                    
+                    <mat-list class="search-results">
+                        <div *ngIf="invoiceHistory && !invoiceHistory.imported">
+                            <div class="billet-spacing">
+                                <div fxLayout="row" fxLayoutGap="20px">
+                                    <p class="title-info bold">Memória de Cálculo</p>
+                                </div>
+                                <div fxLayout="row" fxLayoutGap="20px" class="line-spacing">
+                                    <label class="width-content-10 bold">Data de criação:</label>
+                                    <label class="width-content-8">{{invoiceHistory?.issueDate}}</label>
+                                    <label class="width-content-10 bold">Usuário:</label>
+                                    <label class="width-content-18">{{invoiceHistory?.user}}</label>
+                                    <label class="width-content-21 bold">Valor Total:</label>
+                                    <label class="width-content-23">{{invoiceHistory?.totalAmount}}</label>
+                                </div>
+                                <div fxLayout="row" fxLayoutGap="20px" class="line-spacing">
+                                    <label class="width-content-10 bold">Possui desconto?</label>
+                                    <label class="width-content-8">{{invoiceHistory?.discount}}</label>
+                                    <label class="width-content-10 bold">Possui pro-rata?</label>
+                                    <label class="width-content-18">{{invoiceHistory?.hasProRata}}</label>
+                                    <label class="width-content-21 bold">Possui cobrança de taxa de ativação?</label>
+                                    <label class="width-content-23">{{invoiceHistory?.hasActivationTax}}</label>
+                                </div>
+                                <div fxLayout="row" fxLayoutGap="20px" class="line-spacing">
+                                    <label class="width-content-10 bold">Status e-mail</label>
+                                    <label class="width-content-8">{{invoiceHistory?.emailStatus}}</label>
+                                    <label class="width-content-10 bold">Reemitida?</label>
+                                    <label class="width-content-18">{{invoiceHistory?.issuances}}</label>
+                                </div>
+                            </div>
+                            <hr *ngIf="!isInvoiceOnly">
+                        </div>
+                        <div *ngIf="invoiceHistory && invoiceHistory.imported">
+                            <div class="billet-spacing">
+                                <div fxLayout="row" fxLayoutGap="20px">
+                                    <p class="title-info bold">Memória de Cálculo</p>
+                                </div>
+                                <div fxLayout="row" fxLayoutGap="20px" class="line-spacing">
+                                    <label class="width-content-9 bold">Data de criação:</label>
+                                    <label class="width-content-10">{{invoiceHistory?.issueDate}}</label>
+                                    <label class="width-content-5 bold">Usuário:</label>
+                                    <label class="width-content-18">{{invoiceHistory?.user}}</label>
+                                    <label class="bold">Memoria de Calculo gerada via importação!</label>
+                                </div>
+                            </div>
+                            <hr>
+                        </div>
+                        <div *ngIf="invoiceNoteHistory">
+                            <div fxLayout="row" fxLayoutGap="20px">
+                                <p class="title-info bold">Notas Fiscais</p>
+                            </div>
+                            <li *ngFor="let note of invoiceNoteHistory" class="list-item">
+                                <div class="billet-spacing">
+                                    <div fxLayout="row" fxLayoutGap="20px" class="line-spacing">
+                                        <label class="width-content-11 bold">Data de emissão:</label>
+                                        <label class="width-content-9">{{note?.issueDate}}</label>
+                                        <label class="width-content-14 bold">Usuário:</label>
+                                        <label class="width-content-19">{{note?.user}}</label>
+                                        <label class="width-content-20 bold">Valor Total:</label>
+                                        <label class="width-content-33">{{note?.totalAmount}}</label>
+                                    </div>
+                                    <div fxLayout="row" fxLayoutGap="20px" class="line-spacing">
+                                        <label class="width-content-11 bold">Número da nota:</label>
+                                        <label class="width-content-9">{{note?.serialNumber}}</label>
+                                        <label class="width-content-14 bold">Situação:</label>
+                                        <label class="width-content-19">{{note?.invoiceNoteStatus}}</label>
+                                        <label class="width-content-20 bold">Notas Canceladas?</label>
+                                        <label class="width-content-33">{{note?.canceledInvoiceNotes}}</label>
+                                    </div>
+                                    <div fxLayout="row" fxLayoutGap="20px" class="line-spacing">
+                                        <label class="width-content-11 bold">Status e-mail:</label>
+                                        <label class="width-content-9">{{note?.emailStatus}}</label>
+                                        <label class="width-content-14 bold">Fatura Contabilizada?</label>
+                                        <label class="width-content-19">{{note?.indAccounted}}</label>
+                                        <label class="width-content-20 bold">Emitido registro Convênio 115?</label>
+                                        <label class="width-content-33">{{note?.emitted}}</label>
+                                    </div>
+                                </div>
+                            </li>
+                        </div>
+                        <div *ngIf="debitNoteHistory">
+                            <div fxLayout="row" fxLayoutGap="20px">
+                                <p class="title-info bold">Notas de Débito</p>
+                            </div>
+                            <div fxLayout="row" fxLayoutGap="20px" class="line-spacing">
+                                <label class="width-content-12 bold">Data de emissão:</label>
+                                <label class="width-content-10">{{debitNoteHistory?.issueDate}}</label>
+                                <label class="width-content-6 bold">Usuário:</label>
+                                <label class="width-content-18">{{debitNoteHistory?.userEmission}}</label>
+                                <label class="width-content-11 bold">Valor Total:</label>
+                                <label class="width-content-33">{{debitNoteHistory?.totalAmount}}</label>
+                            </div>
+                            <div fxLayout="row" fxLayoutGap="20px" class="line-spacing">
+                                <label class="width-content-12 bold">Número da nota:</label>
+                                <label class="width-content-10">{{debitNoteHistory?.noteNumber}}</label>
+                                <label class="width-content-6 bold">Situação:</label>
+                                <label class="width-content-18">{{debitNoteHistory?.status}}</label>
+                                <label class="width-content-11 bold">Notas Canceladas?</label>
+                                <label class="width-content-33">{{debitNoteHistory?.canceledDebitNotes}}</label>
+                            </div>
+                            <div fxLayout="row" fxLayoutGap="20px" class="line-spacing">
+                                <label class="width-content-12 bold">Fatura Contabilizada?</label>
+                                <label class="width-content-10">{{debitNoteHistory?.noteAccounted}}</label>
+                                <label class="width-content-6 bold">Produto:</label>
+                                <label class="width-content-18">{{debitNoteHistory?.productType}}</label>
+                                <label class="width-content-11 bold">Tipo de nota</label>
+                                <label class="width-content-15">{{debitNoteHistory?.noteType}}</label>
+                                <label class="width-content-8 bold">Status e-mail:</label>
+                                <label class="width-content-75">{{debitNoteHistory?.statusEmail}}</label>
+                            </div>
+                        </div>
+                        <hr *ngIf="!isInvoiceOnly">
+                        <div *ngIf="noteBillets">
+                            <div fxLayout="row" fxLayoutGap="20px">
+                                <p class="title-info bold">Boleto(s)</p>
+                            </div>
+                            <li *ngFor="let billet of noteBillets" class="list-item">
+                                <div class="billet-spacing">
+                                    <div fxLayout="row" fxLayoutGap="20px" class="line-spacing">
+                                        <label class="width-content-12 bold">Data de emissão:</label>
+                                        <label class="width-content-10">{{billet?.issueDate}}</label>
+                                        <label class="width-content-5 bold">Usuário:</label>
+                                        <label class="width-content-27">{{billet?.userEmission}}</label>
+                                        <label class="width-content-8 bold">Valor à Pagar:</label>
+                                        <label class="width-content-13">{{billet?.totalAmount}}</label>
+                                        <label class="width-content-2 bold">Via:</label>
+                                        <label class="width-content-12">{{billet?.billetVia}}</label>
+                                    </div>
+                                    <div fxLayout="row" fxLayoutGap="20px" class="line-spacing">
+                                        <label class="width-content-12 bold">Data de Vencimento:</label>
+                                        <label class="width-content-10">{{billet?.dueDate}}</label>
+                                        <label class="width-content-20 bold">Possui acréscimo de juros e multa?</label>
+                                        <label class="width-content-12">{{billet?.hasAdditions}}</label>
+                                        <label class="width-content-8 bold">Status:</label>
+                                        <label class="width-content-13">{{billet?.status}}</label>
+                                    </div>
+                                </div>
+                            </li>
+                        </div>
+                    </mat-list>
+                </div>
+            </td>
+        </ng-container>
+    
+        <tr mat-header-row *matHeaderRowDef="displayedColumns" class="generic-header"></tr>
+        <tr mat-row *matRowDef="let line; columns: displayedColumns;" 
+            class="example-element-row"
+            [class.example-expanded-row]="expandedElement === line"
+            (click)="expandRow(line, $event);" ></tr>
+        <ng-container *ngIf="expand">
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
+        </ng-container>
+    </table>
+    
+    <mat-menu #contextMenu="matMenu">
+        <ng-template matMenuContent let-item="item" let-action="action">
+            <button mat-menu-item *ngFor="let subAct of getSubActions(action, item)" (click)="execute(subAct, item, i)">
+                <mat-icon *ngIf="hasIcon(subAct)">{{renderIconName(subAct)}}</mat-icon>
+                {{renderColValue(subAct, item, i, 'action')}}
+            </button>
+        </ng-template>
+    </mat-menu>
+    
+    <div *ngIf="hasPaginator">
+        <mat-paginator 
+            #paginator
+            (page)="onPageEvent($event)"
+            [pageSize]="pageable.size"
+            [length]="page?.totalElements" >
+        </mat-paginator>
+    </div>
+</div>

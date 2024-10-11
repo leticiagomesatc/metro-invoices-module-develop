@@ -1,0 +1,58 @@
+<br/><br/>
+<mat-expansion-panel expanded="true" disabled="true">
+	<mat-expansion-panel-header #header class="principal">
+		<mat-panel-title class="generic-header">
+			Calendário de Emissão / Envio
+		</mat-panel-title>
+	</mat-expansion-panel-header>
+
+
+	<div fxLayout="row" fxLayoutGap="20px" fxLayoutAlign="space-between center" > 
+		<div layout="row" fxLayout="row" fxLayoutGap="10px" fxLayoutAlign="space-between center" > 
+			<div mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate" >
+				<mat-icon>navigate_before</mat-icon>
+			</div>
+			<div mwlCalendarToday [(viewDate)]="viewDate" class="width15em">
+				<h3 style="text-align: center">{{ monthFormat(viewDate) }}</h3>
+			</div>
+			<div mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">
+				<mat-icon>navigate_next</mat-icon>
+			</div>
+		</div>
+		<mat-form-field class="width17em">
+			<mat-select [(value)]="issuanceNote" (selectionChange)="findIssuances()">
+				<mat-option value="INVOICE_CALC_NOTE">Emissão/Envio de Memória de Cálculo</mat-option>
+				<mat-option value="INVOICE_NOTE">Emissão/Envio de Nota Fiscal</mat-option>
+				<mat-option value="DEBIT_NOTE"	>Emissão/Envio de Nota de Débito</mat-option>
+			</mat-select>
+		</mat-form-field>
+	</div>
+	<div layout="column" fxLayout="column" fxLayoutGap="20px" fxLayoutAlign="center none"> 
+		<mwl-calendar-month-view
+			[viewDate]="viewDate"
+			[events]="calendarEvents"
+			[refresh]="refresh"
+			(dayClicked)="dayClicked($event.day)"
+			(beforeViewRender)="updateCalendarEvents($event)"
+			[cellTemplate]="customTemplateId">
+		  </mwl-calendar-month-view>
+	</div>
+</mat-expansion-panel>
+
+
+<ng-template
+	#customTemplateId
+	let-day="day"
+	let-openDay="openDay"
+	let-locale="locale"
+	let-tooltipPlacement="tooltipPlacement"
+	let-highlightDay="highlightDay"
+	let-unhighlightDay="unhighlightDay"
+	let-eventClicked="eventClicked"
+	let-tooltipTemplate="tooltipTemplate"
+	let-tooltipAppendToBody="tooltipAppendToBody">
+<div class="cal-cell-top">
+  <div class="cal-day-badge unset" *ngIf="day.badgeTotal > 0">{{ day.badgeTotal }}</div>
+  <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
+</div>
+</ng-template>

@@ -1,0 +1,267 @@
+<mat-toolbar>
+
+  <div>
+    <button #btnMenu mat-button (click)="sidenav.toggle()" class="button-collapse">
+      <i class="material-icons">menu</i>
+    </button>
+  </div>
+
+  <div>
+    <a [title]="versionAndDate" (click)="goHome()" class="brand-logo" style="padding-right: 50px;">
+      <img src="assets/imagem/orion_logo.png" width="110" height="30">
+    </a>
+  </div>
+  <div style="flex: 1 1 auto"></div>
+  <span>
+
+    <button mat-button [matMenuTriggerFor]="appMenu" *ngIf="auth.isLoggedIn()">
+      <mat-icon>account_circle</mat-icon> Olá, {{ auth.userProfile?.name }} <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+  </span>
+  <mat-menu style="background-color:  rgb(245, 245, 245)" #appMenu="matMenu" xPosition="before"
+    class="mat-elevation-z0">
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>exit_to_app</mat-icon>Sair
+    </button>
+  </mat-menu>
+
+</mat-toolbar>
+
+<mat-sidenav-container>
+
+  <mat-sidenav #sidenav>
+
+    <div class="sidnav-greeting">
+      <i class="material-icons left">account_circle</i> Olá, {{ auth.userProfile?.name }}
+    </div>
+
+    <mat-divider></mat-divider>
+    <mat-accordion>
+      <mat-expansion-panel class="mat-elevation-z0">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Administração
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-accordion>
+          <div matExpansionPanelContent>
+            <mat-action-row style="cursor: pointer;" [routerLink]="'/state-information'" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.administracao)">
+              Informações Estado
+            </mat-action-row>
+          </div>
+        </mat-accordion>
+      </mat-expansion-panel>
+      <mat-expansion-panel class="mat-elevation-z0">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Financeiro
+          </mat-panel-title>
+          <mat-divider></mat-divider>
+        </mat-expansion-panel-header>
+
+        <mat-accordion>
+          <mat-expansion-panel class="mat-elevation-z0 ">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Faturamento
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <mat-accordion>
+              <mat-expansion-panel class="mat-elevation-z0" *ngIf="auth.hasAllRoles(userRoles.allInvoiceCalcViewRoles)">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    Memória de Cálculo
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div matEpansionPanelContent>
+                  <mat-action-row style="cursor: pointer;" [routerLink]="'/invoice-calc'" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.invoiceCalcView)">
+                    Ordem de Serviço
+                  </mat-action-row>
+                  <mat-action-row style="cursor: pointer;" [routerLink]="'/import-calc'" (click)="sidenav.close()">
+                    Importação de memória de cálculo
+                  </mat-action-row>
+                  <!-- *ngIf="auth.hasRole(userRoles.allInvoiceCalcViewRoles)" -->
+                  <mat-action-row style="cursor: pointer;" [routerLink]="'/invoice-import'" (click)="sidenav.close()">
+                    Importar Arquivo
+                  </mat-action-row>
+                  <mat-action-row style="cursor: pointer;" [routerLink]="'/integration-history'" (click)="sidenav.close()">
+                    Histórico de integração
+                  </mat-action-row>
+                  <mat-action-row style="cursor: pointer;" [routerLink]="'/discount-finan-apprv'" (click)="sidenav.close()">
+                    Descontos Aguardando Aprovação Financeira
+                  </mat-action-row>
+                </div>
+              </mat-expansion-panel>
+              <mat-expansion-panel class="mat-elevation-z0 " *ngIf="auth.hasAllRoles(userRoles.allInvoiceViewRoles)">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    Nota Fiscal
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div matExpansionPanelContent>
+                  <mat-action-row style="cursor: pointer;" [routerLink]="'/invoices'" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.inInvoiceView)">
+                    Fatura
+                  </mat-action-row>
+                </div>
+              </mat-expansion-panel>
+              <mat-expansion-panel class="mat-elevation-z0 " *ngIf="auth.hasAllRoles(userRoles.allDebitNotesRoles)">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    Nota de Débito
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div matExpansionPanelContent>
+                  <mat-action-row style="cursor: pointer;" routerLink="/debit-notes/templates" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.dbTemplateView)">
+                    Templates
+                  </mat-action-row>
+                  <mat-action-row style="cursor: pointer;" routerLink="/debit-notes/issues" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.dbIssueView)">
+                    Emissão de Notas
+                  </mat-action-row>
+                </div>
+              </mat-expansion-panel>
+              <mat-expansion-panel class="mat-elevation-z0 " *ngIf="auth.hasAllRoles(userRoles.allReceiptsViewRoles)">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    Recebimentos
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div matExpansionPanelContent>
+                  <!-- *ngIf="auth.hasRole(userRoles.inClientBalanceView)" -->
+                  <mat-action-row style="cursor: pointer;" [routerLink]="'/client-balance'" (click)="sidenav.close()" >
+                    Controle de Saldos
+                  </mat-action-row>
+                  <!-- *ngIf="auth.hasRole(userRoles.inConciliationView)" -->
+                  <mat-action-row style="cursor: pointer;" (click)="sidenav.close()" >
+                    Conciliação
+                  </mat-action-row>
+                  <mat-action-row style="cursor: pointer;" routerLink="/remittances" (click)="sidenav.close()">
+                    Remessas
+                  </mat-action-row>
+                  <!-- *ngIf="auth.hasRole(userRoles.inCnabIncl)" -->
+                  <mat-action-row style="cursor: pointer;" [routerLink]="'/cnab-import'" (click)="sidenav.close()" >
+                    Receber CNAB
+                  </mat-action-row>
+                </div>
+              </mat-expansion-panel>
+              <mat-action-row style="cursor: pointer;" [routerLink]="'/issuance-calendar'" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.inIssuanceCalendarView)">
+                Calendário de emissão/envio
+              </mat-action-row>
+              <mat-action-row style="cursor: pointer;" [routerLink]="'/billing-history'" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.inBillingHistoryView)">
+                Histórico de Faturamento
+              </mat-action-row>
+              <mat-action-row style="cursor: pointer;" routerLink="/invoicing-report" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.inInvoicingReportView)">
+                Relatório de Faturamento
+              </mat-action-row>
+            </mat-accordion>
+          </mat-expansion-panel>
+          <mat-expansion-panel class="mat-elevation-z0 " *ngIf="auth.hasAllRoles(userRoles.allDunningViewRoles)">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Cobrança
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div matExpansionPanelContent>
+              <mat-action-row style="cursor: pointer;" [routerLink]="'/dunning'" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.dunningView)">
+                Régua de Cobrança
+              </mat-action-row>
+              <mat-action-row style="cursor: pointer;" [routerLink]="'/overdue-panel'" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.overduePanelView)">
+                Inadimplência
+              </mat-action-row>
+            </div>
+          </mat-expansion-panel>
+          <mat-expansion-panel class="mat-elevation-z0 " *ngIf="auth.hasRole(userRoles.inAccountingFilesView)">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Contabilidade
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div matExpansionPanelContent>
+              <mat-action-row style="cursor: pointer;" [routerLink]="'/accounting-files'" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.inAccountingFilesView)">
+                Arquivos Contábeis
+              </mat-action-row>
+            </div>
+          </mat-expansion-panel>
+          <mat-expansion-panel class="mat-elevation-z0 " *ngIf="auth.hasRole(userRoles.inCovenantFileView)">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Fiscal
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div matExpansionPanelContent>
+              <mat-action-row style="cursor: pointer;" [routerLink]="'/covenant-files'" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.inCovenantFileView)">
+                Arquivos Convênio 115
+              </mat-action-row>
+            </div>
+          </mat-expansion-panel>
+          <div matExpansionPanelContent>
+            <mat-action-row style="cursor: pointer; border-top-style: none;" [routerLink]="'/note-billet-import'" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.noteBilletImportInclude)">
+              Importação de Notas e Boletos
+            </mat-action-row>
+          </div>
+          <mat-expansion-panel class="mat-elevation-z0 " *ngIf="auth.hasAllRoles(userRoles.allIntegracaoViewRoles)">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Integração
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div matExpansionPanelContent>
+              <mat-action-row style="cursor: pointer;" [routerLink]="'/customers-integration'" (click)="sidenav.close()">
+                <!--*ngIf="auth.hasRole(userRoles.dunningView)"-->
+                Integração Grupo de Faturamento
+              </mat-action-row>
+              <mat-action-row style="cursor: pointer;" [routerLink]="'/contact'" (click)="sidenav.close()">
+                <!--*ngIf="auth.hasRole(userRoles.dunningView)"-->
+                Integração de Contatos
+              </mat-action-row>
+        <mat-action-row style="cursor: pointer;" [routerLink]="'/integration-history-customer'" (click)="sidenav.close()">
+                Histórico de integração de Clientes
+              </mat-action-row>
+        <mat-action-row style="cursor: pointer;" [routerLink]="'/integration-history-contact'" (click)="sidenav.close()">
+                Histórico de integração de Contatos
+              </mat-action-row>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </mat-expansion-panel>
+      <mat-expansion-panel class="mat-elevation-z0">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            NOC & SAC
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-accordion>
+          <div matExpansionPanelContent>
+            <mat-action-row style="cursor: pointer;" [routerLink]="'/tickets-discount'" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.ticketsDiscount)">
+              Tickets Processados Aguardando Análise
+            </mat-action-row>
+            <mat-action-row style="cursor: pointer;" [routerLink]="'/tickets-discount-calc'" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.ticketsDiscountCalc)">
+              Descontos por interrupção calculados
+            </mat-action-row>
+          </div>
+        </mat-accordion>
+      </mat-expansion-panel>
+      <mat-expansion-panel class="mat-elevation-z0">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Relatórios
+          </mat-panel-title>
+          <!-- <mat-divider></mat-divider> -->
+        </mat-expansion-panel-header>
+        <mat-accordion>
+          <div matExpansionPanelContent>
+            <mat-action-row style="cursor: pointer;" [routerLink]="'/export-report'" (click)="sidenav.close()" *ngIf="auth.hasRole(userRoles.exportReport)">
+              Base de OS's
+            </mat-action-row>
+          </div>
+        </mat-accordion>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="no-v-scroll">
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+
+</mat-sidenav-container>
+
+<app-footer></app-footer>

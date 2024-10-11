@@ -1,0 +1,54 @@
+
+<button mat-fab [routerLink]="['/dunning/new']" class="fab-button fab-top" matTooltip="Adicionar Régua de Cobrança" matTooltipPosition="above" *ngIf="authService.hasRole(userRoles.dunningInclude)">
+    <mat-icon>add</mat-icon>
+</button>
+
+<fw-search 
+    class="main-div"
+    [options]="{title:'Listar Régua de Cobrança'}" 
+    path="dunnings"
+    [cols]="cols"
+    [actions]="actions"
+    [enableSelection]="false"
+    [addFields]="['id']"
+    (onAction)="execute($event)"
+    (onSearch)="onSearch()"
+    #search>
+
+    <form class="example-form">
+
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="codCliente"  placeholder="Código do Cliente" [(ngModel)]="search.filters.sapCode" >
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="cnpj"  placeholder="CNPJ" [(ngModel)]="search.filters.cnpj" mask="00.000.000/0000-00">
+            </mat-form-field>
+
+            <fw-autocomplete
+                fxFlex="4 1 auto"
+                flex="4 1 auto"
+                label="Grupo de Faturamento"
+                path="customers"
+                mapAs="id"
+                [subscribeTo]="search"
+                [(value)]="search.filters.customer">
+            </fw-autocomplete>
+
+            <fw-autocomplete
+                fxFlex="4 1 auto"
+                flex="4 1 auto"
+                label="Régua de Cobrança"
+                path="dunnings/autocompleteDunningName"
+                mapAs="id"
+                [subscribeTo]="search"
+                [(value)]="search.filters.dunning">
+            </fw-autocomplete>
+
+            <mat-checkbox fxFlex="1 1 auto" matInput name="active" [(ngModel)]="search.filters.active">Ativo?</mat-checkbox>
+        </div>
+        
+    </form>
+    
+</fw-search>

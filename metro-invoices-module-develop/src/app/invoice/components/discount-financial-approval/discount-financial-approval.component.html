@@ -1,0 +1,158 @@
+<button mat-fab class="fab-button fab-top" [matMenuTriggerFor]="matBulkMenu" [disabled]="!search.hideSpinnerMenu || !search.hideSpinnerSearch">
+    <mat-icon *ngIf="search.hideSpinnerMenu">more_horiz</mat-icon>
+      <mat-progress-spinner
+          style="bottom: 8px"
+          *ngIf="!search.hideSpinnerMenu"
+          color="accent"
+          mode="indeterminate"
+          diameter="40"
+          strokeWidth="5">
+      </mat-progress-spinner>
+  </button>
+  <mat-menu #matBulkMenu="matMenu">
+    <button mat-menu-item (click)="approveSelectedDiscounts()">
+      <mat-icon>done</mat-icon>
+      Aprovar Descontos Selecionados
+    </button>
+    <button mat-menu-item (click)="openZip()" *ngIf="authService.hasRole(userRoles.invoiceCalcDownload)">
+      <mat-icon>cloud_download</mat-icon>
+      Download de relatório excel
+    </button>
+    <button mat-menu-item (click)="disapproveSelectedDiscounts()" *ngIf="authService.hasRole(userRoles.invoiceCalcCancel)">
+      <mat-icon>cancel</mat-icon>
+      Reprovar Descontos Selecionados
+    </button>
+  </mat-menu>
+  
+<fw-search
+    [options]="{title:'Descontos Aguardando Aprovação Financeira'}"
+    [path]="'discount-finan-apprv'"
+    (onClear)="executeClear($event)"
+    (onSearch)="executeSearch()"
+    [cols]="cols"
+    (onAction)="execute($event)"
+    [actions]="actions"
+    [enableSelection]="true"
+    [typetooltip]="'help'"
+    [selectionCondition]="selectionCondition.bind(this)"
+    #search>
+    <form class="example-form">
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-label>Aprovação Financeira:</mat-label>
+                <mat-select [(value)]="search.filters.financialApproval">
+                <mat-option>Selecione</mat-option>
+                <mat-option value="4">Pendente</mat-option>
+                <mat-option value="10">Aprovado</mat-option>
+                <mat-option value="11">Reprovado</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="2 1 auto">
+                <input matInput type="text"
+                    placeholder="Designação:"
+                    [(ngModel)]="search.filters.designation"
+                    [formControl]="designationControl"
+                    [matAutocomplete]="autoDesignation" autocomplete="off">
+                <mat-autocomplete #autoDesignation="matAutocomplete">
+                    <mat-option *ngFor="let designation of filteredDesignation | async" [value]="designation">
+                        {{designation}}
+                    </mat-option>
+                </mat-autocomplete>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="idticketNV3" mask="99999999999" placeholder="Ticket:" [(ngModel)]="search.filters.idticketNV3" >
+            </mat-form-field>
+        </div>
+        <div fxLayout="row" fxLayoutGap="20px">       
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="inicioInterrupcao" placeholder="Início período da interrupção:" [(ngModel)]="search.filters.initialInterruptionPeriod" [matDatepicker]="iniInt" autocomplete="off" readonly>
+                <mat-datepicker-toggle matSuffix [for]="iniInt"></mat-datepicker-toggle>
+                <mat-datepicker #iniInt startView="multi-year" disabled="false">
+                </mat-datepicker>
+                <button *ngIf="!!search.filters.initialInterruptionPeriod" mat-icon-button matSuffix (click)="search.filters.initialInterruptionPeriod = null || search.filters.finalInterruptionPeriod = null" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-form-field>
+        
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="fimInterrupcao" placeholder="Fim período da interrupção:" [(ngModel)]="search.filters.finalInterruptionPeriod" 
+                (dateChange)="validateDate(search.filters.initialInterruptionPeriod, search.filters.finalInterruptionPeriod, 'interrupcao')" [matDatepicker]="fimInt" autocomplete="off" readonly>
+                <mat-datepicker-toggle matSuffix [for]="fimInt"></mat-datepicker-toggle>
+                <mat-datepicker #fimInt startView="multi-year" [disabled]="!search.filters.initialInterruptionPeriod">
+                </mat-datepicker>
+                <button *ngIf="!!search.filters.finalInterruptionPeriod" mat-icon-button matSuffix (click)="search.filters.finalInterruptionPeriod = null" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="inicioImport" placeholder="Início período da importação no SICOP:" [(ngModel)]="search.filters.initialPeriodOfSICOPImport" 
+                [matDatepicker]="iniImp" autocomplete="off" readonly>
+                <mat-datepicker-toggle matSuffix [for]="iniImp"></mat-datepicker-toggle>
+                <mat-datepicker #iniImp startView="multi-year" disabled="false">
+                </mat-datepicker>
+                <button *ngIf="!!search.filters.initialPeriodOfSICOPImport" mat-icon-button matSuffix (click)="search.filters.initialPeriodOfSICOPImport = null || search.filters.finalPeriodOfSICOPImport = null" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-form-field>
+        
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="fimImpor" placeholder="Fim período da importação no SICOP:" [(ngModel)]="search.filters.finalPeriodOfSICOPImport"
+                (dateChange)="validateDate(search.filters.initialPeriodOfSICOPImport, search.filters.finalPeriodOfSICOPImport, 'importacao')" [matDatepicker]="fimImp" autocomplete="off" readonly>
+                <mat-datepicker-toggle matSuffix [for]="fimImp"></mat-datepicker-toggle>
+                <mat-datepicker #fimImp startView="multi-year" [disabled]="!search.filters.initialPeriodOfSICOPImport">
+                </mat-datepicker>
+                <button *ngIf="!!search.filters.finalPeriodOfSICOPImport" mat-icon-button matSuffix (click)="search.filters.finalPeriodOfSICOPImport = null" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-form-field>
+        </div>
+
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-select placeholder="Segmento:" [formControl]="marketSegmentControl" [(ngModel)]="search.filters.marketSegmentsId">
+                    <mat-option>Selecione</mat-option>
+                    <mat-option *ngFor="let marketSegment of marketSegments | async" [value]="marketSegment.id">
+                        {{marketSegment.description}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="4 1 auto">
+                <input matInput type="text"
+                    placeholder="Código do Cliente:"
+                    [(ngModel)]="search.filters.customerSapCode"
+                    [formControl]="codSapControl"
+                    [matAutocomplete]="autoSapCode" autocomplete="off">
+                <mat-autocomplete #autoSapCode="matAutocomplete" [displayWith]="displaySapCode">
+                    <mat-option *ngFor="let customer of filteredSapCode | async" [value]="customer">
+                        {{customer.sapCode}}
+                    </mat-option>
+                </mat-autocomplete>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="8 1 auto">
+                <input matInput type="text"
+                    placeholder="Grupo de Faturamento:"
+                    [(ngModel)]="search.filters.customer"
+                    [formControl]="customerControl"
+                    [matAutocomplete]="autoCustomer" autocomplete="off">
+                <mat-autocomplete #autoCustomer="matAutocomplete" [displayWith]="displayCustomer">
+                    <mat-option *ngFor="let customer of filteredCustomers | async" [value]="customer">
+                        {{customer.name}}
+                    </mat-option>
+                </mat-autocomplete>
+            </mat-form-field>
+        </div>
+        <br>
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-label>Desconto Aplicado na Memória de Cálculo?</mat-label>
+            <mat-radio-group class="radio-group head-fields" [formControl]="discountControl" [(ngModel)]="search.filters.discountAppliedMc">
+                <mat-radio-button class="radio-button" *ngFor="let status of yesNoStatus" [value]="status.key">
+                    {{status.description}}
+                </mat-radio-button>
+            </mat-radio-group>
+        </div>
+    </form>
+</fw-search>

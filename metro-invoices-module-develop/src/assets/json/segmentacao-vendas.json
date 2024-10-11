@@ -1,0 +1,22 @@
+[
+    {
+        "id": 41,
+        "descricao": "Corporativo Privado",
+        "ativo": true
+    },
+    {
+        "id": 42,
+        "descricao": "Corporativo Público",
+        "ativo": true
+    },
+    {
+        "id": 2,
+        "descricao": "ISP",
+        "ativo": false
+    },
+    {
+        "id": 3,
+        "descricao": "Operadora",
+        "ativo": true
+    }
+]

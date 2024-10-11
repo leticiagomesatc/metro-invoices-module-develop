@@ -1,0 +1,13 @@
+<h1 mat-dialog-title>Tipo de arquivo</h1>
+
+
+<mat-checkbox matInput [(ngModel)]="billet" >Boleto</mat-checkbox>
+<br>
+<mat-checkbox matInput [(ngModel)]="note">Nota</mat-checkbox>
+<br>
+<br>
+<mat-card-actions align="right">
+       <button mat-raised-button class="secondary-dark btn-main" (click)="close()">Cancelar</button>
+      <button mat-raised-button class="primary btn-main" (click)="confirm()">Confirmar</button>
+   
+</mat-card-actions>

@@ -1,0 +1,31 @@
+
+<mat-card class="edit-card" style="margin-top: 30px; margin-bottom: 30px" class="principal generic-header">
+    {{props('title')}}
+</mat-card>
+
+<mat-card [class.edit-card]="!overflowClass" [class.overflow-card]="overflowClass">
+    
+    <mat-card-subtitle align="end" *ngIf="props('subtitle')">
+        {{props('subtitle')}}
+    </mat-card-subtitle>
+    
+
+    <mat-card-content [class.overflow-card-content]="overflowClass">
+        <ng-content>
+
+        </ng-content>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+        <mat-progress-spinner
+            style="margin-right: 15px"
+            *ngIf="!hideSpinnerEdit && !props('disabledSave')"
+            color="accent"
+            mode="indeterminate"
+            diameter="40"
+            strokeWidth="5">
+        </mat-progress-spinner>
+        <button mat-raised-button class="primary btn-main" (click)="save()" [disabled]="!hideSpinnerEdit || props('disabledSave')" *ngIf="saveButton">{{props('buttonSave')}}</button>
+        <button mat-button class="secondary-dark btn-main" (click)="cancel()" [disabled]="!hideSpinnerEdit">Cancelar</button>
+    </mat-card-actions>
+</mat-card>

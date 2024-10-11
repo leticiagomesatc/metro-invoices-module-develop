@@ -1,0 +1,80 @@
+<button mat-fab class="fab-button fab-top" [disabled]="disableExportBtn" (click)="export()" matTooltip="Exportar" matTooltipPosition="above">
+    <mat-icon>cloud_download</mat-icon>
+</button>
+    
+<fw-search-history
+    class="main-div"
+    [options]="{title:'Histórico de Faturamento'}" 
+    path="billing-history"
+    [cols]="cols"
+    [enableSelection]="false"
+    [addFields]="['createdInvoiceNoteIdList', 'canceledInvoiceNotes', 'debitNoteId', 'noteType', 'canceledDebitNotes', 'lastCanceledNote', 'invoiceId']"
+    (onSearch)="onSearch()"
+    (onClear)="executeClear($event)"
+    [actions]="actions"
+    [expand]="true"
+    (onCreateInnerList)="onCreateInnerList($event)"
+    [service]="fwSearchHistoryService"
+    #search>
+
+    <form class="example-form">
+
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="codCliente"  placeholder="Código do Cliente" [(ngModel)]="search.filters.customerSapCode" >
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="cnpj"  placeholder="CNPJ" [(ngModel)]="search.filters.customerCnpj" mask="00.000.000/0000-00">
+            </mat-form-field>
+
+            <fw-autocomplete
+                fxFlex="4 1 auto"
+                flex="4 1 auto"
+                label="Grupo de Faturamento"
+                path="customers"
+                mapAs="id"
+                [subscribeTo]="search"
+                [(value)]="search.filters.customer"
+                (change)=cleanFilterCustomer()>
+            </fw-autocomplete>
+
+            <mat-form-field fxFlex="1 1 auto"> 
+                <mat-label>Tipo de Nota</mat-label>
+                <mat-select #noteTypeSelect>
+                    <mat-option>Todos</mat-option>
+                    <mat-option value="NF">Nota Fiscal</mat-option>
+                    <mat-option value="ND">Nota de Débito</mat-option>
+                    <mat-option value="MC">Memória de Cálculo</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="comp" placeholder="Competência" [(ngModel)]="search.filters.period"
+                    [matDatepicker]="dp" autocomplete="off" readonly [formControl]="cmpControl">
+                <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                <mat-datepicker #dp startView="multi-year" disabled="false"
+                (yearSelected)="chosenYearHandler($event)"
+                (monthSelected)="chosenMonthHandler($event, dp)"
+                >
+                </mat-datepicker>
+                <button *ngIf="!!search.filters.period " mat-icon-button matSuffix (click)="search.filters.period = null" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-form-field>
+
+            <fw-autocomplete 
+                fxFlex="1 1 auto" 
+                flex="1 1 auto" 
+                label="Local de Negócio" 
+                path="business-locals"
+                mapAs="id"
+                [subscribeTo]="search"
+                [(value)]="search.filters.businessLocal">
+            </fw-autocomplete> 
+
+        </div>
+        
+    </form>
+    
+</fw-search-history>

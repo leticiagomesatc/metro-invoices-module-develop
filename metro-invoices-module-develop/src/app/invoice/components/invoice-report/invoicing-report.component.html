@@ -1,0 +1,159 @@
+<br /><br />
+<mat-expansion-panel expanded="true" disabled="true">
+    <mat-expansion-panel-header #header class="principal">
+        <mat-panel-title class="generic-header">
+            Relatório de Faturamento
+        </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <form class="search-filters" [formGroup]="form">
+
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="sapCode" placeholder="Código do Cliente" [mask]="maskCliente"
+                    formControlName="customerSapCode">
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="socialReason" placeholder="Razão Social" formControlName="customerSocialReason">
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="nationalNumber" placeholder="CNPJ" formControlName="customerNationalNumber"
+                    mask="00.000.000/0000-00">
+            </mat-form-field>
+
+            <mat-form-field fxFlex="4 1 auto">
+                <input matInput type="text" placeholder="Grupo de Faturamento*" formControlName="customer"
+                    [matAutocomplete]="auto" autocomplete="off">
+                <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayCustomer">
+                    <mat-option *ngFor="let option of filteredCustomers | async" [value]="option">
+                        {{option.sapCode}} - {{option.name}}
+                    </mat-option>
+                </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-select placeholder="Segmento de mercado" formControlName="marketSegment">
+                    <mat-option>Selecione</mat-option>
+                    <mat-option *ngFor="let marketSegment of marketSegments | async" [value]="marketSegment.id">
+                        {{marketSegment.description}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+        <div fxLayout="row" fxLayoutGap="20px">
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="firstEmissionDate" placeholder="Início periodo de emissão da nota fiscal/débito"
+                    [matDatepicker]="idpe"
+                    (dateChange)="resetMin('Emission')"
+                    autocomplete="off" readonly formControlName="firstEmissionDate">
+                <mat-datepicker-toggle matSuffix [for]="idpe"></mat-datepicker-toggle>
+                <mat-datepicker #idpe disabled="false">
+                </mat-datepicker>
+                <button mat-icon-button matSuffix (click)="resetDate('Emission')">
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <mat-error>{{validate.message(form.controls.firstEmissionDate)}}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="lastEmissionDate" placeholder="Fim periodo de emissão da nota fiscal/débito"
+                    [matDatepickerFilter]="filterEmission"
+                    [matDatepicker]="ldpe" autocomplete="off" readonly formControlName="lastEmissionDate">
+                <mat-datepicker-toggle matSuffix [for]="ldpe"></mat-datepicker-toggle>
+                <mat-datepicker #ldpe disabled="false">
+                </mat-datepicker>
+                <button mat-icon-button matSuffix (click)="form.controls.lastEmissionDate.reset()">
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <mat-error>{{validate.message(form.controls.lastEmissionDate)}}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="firstPaymentDate"
+                    placeholder="Início periodo de recebimento da nota fiscal/débito"
+                    (dateChange)="resetMin('Payment')" [matDatepicker]="idpr"
+                    autocomplete="off" readonly formControlName="firstPaymentDate">
+                <mat-datepicker-toggle matSuffix [for]="idpr"></mat-datepicker-toggle>
+                <mat-datepicker #idpr disabled="false">
+                </mat-datepicker>
+                <button mat-icon-button matSuffix (click)="resetDate('Payment')">
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <mat-error>{{validate.message(form.controls.firstPaymentDate)}}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="lastPaymentDate" placeholder="Fim periodo de recebimento da nota fiscal/débito"
+                    [matDatepickerFilter]="filterPayment"
+                    [matDatepicker]="ldpr" autocomplete="off" readonly formControlName="lastPaymentDate">
+                <mat-datepicker-toggle matSuffix [for]="ldpr"></mat-datepicker-toggle>
+                <mat-datepicker #ldpr disabled="false">
+                </mat-datepicker>
+                <button mat-icon-button matSuffix (click)="form.controls.lastPaymentDate.reset()">
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <mat-error>{{validate.message(form.controls.lastPaymentDate)}}</mat-error>
+            </mat-form-field>
+
+        </div>
+        <div fxLayout="row" fxLayoutGap="20px">
+
+            <!--Inicio Período cancelamento da nota-->
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="firstCancelDate"
+                    placeholder="Início periodo de cancelamento da nota fiscal/débito"
+                    (dateChange)="resetMin('Cancel')" [matDatepicker]="idcn"
+                    autocomplete="off" readonly formControlName="firstCancelDate">
+                <mat-datepicker-toggle matSuffix [for]="idcn"></mat-datepicker-toggle>
+                <mat-datepicker #idcn disabled="false">
+                </mat-datepicker>
+                <button mat-icon-button matSuffix (click)="resetDate('Cancel')">
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <mat-error>{{validate.message(form.controls.firstCancelDate)}}</mat-error>
+            </mat-form-field>
+
+             <!--Fim período cancelamento da nota-->
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="lastCancelDate" placeholder="Fim periodo de cancelamento da nota fiscal/débito"
+                    [matDatepickerFilter]="filterCancel"
+                    [matDatepicker]="ldcn" autocomplete="off" readonly formControlName="lastCancelDate">
+                <mat-datepicker-toggle matSuffix [for]="ldcn"></mat-datepicker-toggle>
+                <mat-datepicker #ldcn disabled="false">
+                </mat-datepicker>
+                <button mat-icon-button matSuffix (click)="form.controls.lastCancelDate.reset()">
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <mat-error>{{validate.message(form.controls.lastCancelDate)}}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-select placeholder="UF Filial emissora" formControlName="state">
+                    <mat-option>Selecione</mat-option>
+                    <mat-option *ngFor="let state of states | async" [value]="state">
+                        {{state}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-select placeholder="Status da nota" formControlName="noteStatus">
+                    <mat-option>Selecione</mat-option>
+                    <mat-option *ngFor="let status of statuses" [value]="status.key">
+                        {{status.value}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-checkbox fxFlex="1 1 none" matInput name="debitnotes" formControlName="exportInvoiceItens">Exportar
+                itens das notas fiscais</mat-checkbox>
+
+        </div>
+
+        <mat-action-row align="end">
+            <button mat-raised-button class="primary btn-main" [disabled]="disableExportBtn"
+                (click)="export()">Exportar</button>
+        </mat-action-row>
+    </form>
+</mat-expansion-panel>

@@ -1,0 +1,62 @@
+name: Enviar Pull Request Automaticamente
+
+on:
+  pull_request:
+    types: 
+      - closed
+    branches:
+      - master
+
+jobs:
+  sync-branches:
+    runs-on: ubuntu-latest
+    name: Sincronizar branches de trabalho
+    steps:
+      - name: Fazer checkout do projeto
+        uses: actions/checkout@v3
+      - name: Configurar node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 12
+
+     # - name: Obter nome da branch do PR
+     #   run: |
+     #     pr_branch=${GITHUB_HEAD_REF}
+     #     echo "Branch do PR: $pr_branch"
+     #     
+     # - name: Obter nome da branch
+     #   run: |
+     #     # Extrair apenas o nome da branch da variável GITHUB_REF
+     #     branch_name=${GITHUB_REF#refs/heads/}
+     #     echo "Branch corrente: $branch_name"
+
+      - name: Filtrar branches de trabalho
+        id: getBranches
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const response = await github.repos.listBranches({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            
+            const branches = response.data.map(branch => branch.name).filter(branche => branche != 'master' && branche != 'develop' && branche != 'qc' && branche != 'uat' && branche != 'qc-project' && branche != 'uat-project' && branche != 'dev');
+            core.setOutput('BRANCHES', branches.join(','));
+            
+      - name: Criar Pull Request para branches de trabalho
+        env:
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          branches=$(echo "${{ steps.getBranches.outputs.BRANCHES }}" | tr ',' '\n')
+           for branch in $branches; do
+            # Verificar se um PR já existe da branch base (master) para a branch de destino ($branch)
+            pr_exists=$(gh pr list --search is:open --base "$branch" --head master)
+            echo "$pr_exists"
+            if [ -z $pr_exists ]; then
+              echo "Não existe PR de master para $branch. Criando PR..."
+              gh pr create --base "$branch" --head master --title "Atualização da branch $branch" --body "Essa é uma atualização automática da branch $branch com as últimas publicações na master."
+            else
+              echo "Já existe PR de master para $branch. Ignorando a criação."
+            fi
+          done

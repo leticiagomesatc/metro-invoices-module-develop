@@ -1,0 +1,13 @@
+
+.generic-header {
+  color: white !important;
+}
+
+mat-selection-list {
+  max-height: 350px;
+  overflow: auto;
+  border: solid;
+  border-color: #d1cdcd;
+  padding: 2px 10px;
+  border-width: 2px;
+}

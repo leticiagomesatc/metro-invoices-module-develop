@@ -1,0 +1,88 @@
+<mat-card *ngIf="isDevMode()">
+    {{ search.filters | json }}
+</mat-card>
+
+<button mat-fab class="fab-button fab-top" [disabled]="disableExportBtn" (click)="download()" matTooltip="Exportar Relatório de Status Cobrança" matTooltipPosition="above">
+    <mat-icon>cloud_download</mat-icon>
+</button>
+
+<fw-search 
+    idCol="billetId"
+    [options]="{title:'Controle de Saldos'}" 
+    [path]="'customers'" 
+    [cols]="cols" 
+    [innerCols]="innerCols"
+    [actions]="actions"
+    [innerActions]="innerActions"
+    [expand]="true"
+    [service]="balanceService"
+    [addFields]="['id']"
+    (onSearch)="executeSearch()"
+    (onClear)="executeClear($event)"
+    (onAction)="executeAction($event)"
+    (onCreateInnerList)="onCreateInnerList($event)"
+    #search>
+    <form class="example-form" [formGroup]="form">
+        <div fxLayout="row" fxLayoutGap="20px">
+            <!-- sapCode -->
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="sapCode" [mask]="maskCliente" placeholder="Código Cliente" formControlName="customerSapCode">
+            </mat-form-field>
+            <!-- companyBranch -->
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="nationalCompanyNumber" mask="00.000.000/0000-00" placeholder="CNPJ" formControlName="customerNationalCompanyNumber">
+            </mat-form-field>
+            <!-- customer -->
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="name" placeholder="Grupo de Faturamento" formControlName="customerName">
+            </mat-form-field>
+            <!-- noteType -->            
+            <mat-form-field fxFlex="1 1 auto"> 
+                <mat-label>Tipo de Nota</mat-label>
+                <mat-select formControlName="noteType">
+                    <mat-option>Todos</mat-option>
+                    <mat-option value="IN">Nota Fiscal</mat-option>
+                    <mat-option value="DN">Nota de Débito</mat-option>
+                </mat-select>
+            </mat-form-field>
+            
+        </div>
+        <div fxLayout="row" fxLayoutGap="20px">
+                <!-- createdOnStart -->
+                <mat-form-field >
+                    <input matInput name="createdOnStart" placeholder="Data de Emissão inicial" [matDatepicker]="myDateCreatedOnStart" autocomplete="off" readonly
+                        formControlName="createdOnStart">
+                    <mat-datepicker-toggle matSuffix [for]="myDateCreatedOnStart"></mat-datepicker-toggle>
+                    <mat-datepicker #myDateCreatedOnStart disabled="false"></mat-datepicker>
+                    <button mat-icon-button matSuffix (click)="form.controls.createdOnStart.reset()" >
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                    <mat-error>{{validate.message(form.controls.createdOnStart)}}</mat-error>
+                </mat-form-field>
+                <!-- createdOnEnd -->
+            <mat-form-field >
+                <input matInput name="createdOnEnd" placeholder="Data de Emissão final" [matDatepicker]="myDateCreatedOnEnd" autocomplete="off" readonly
+                formControlName="createdOnEnd">
+                <mat-datepicker-toggle matSuffix [for]="myDateCreatedOnEnd"></mat-datepicker-toggle>
+                <mat-datepicker #myDateCreatedOnEnd disabled="false"></mat-datepicker>
+                <button mat-icon-button matSuffix (click)="form.controls.createdOnEnd.reset()" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <mat-error>{{validate.message(form.controls.createdOnEnd)}}</mat-error>
+            </mat-form-field>
+
+        </div>
+        <div fxLayout="row" fxLayoutGap="15px">
+            <!-- downedBalance -->
+            <mat-checkbox fxFlex="1 1 none" matInput name="downedBalance" formControlName="downedBalance">Saldos já baixados</mat-checkbox>
+            <!-- partialDownedBalance -->
+            <mat-checkbox fxFlex="1 1 none" matInput name="partialDownedBalance" formControlName="partialDownedBalance">Saldos com baixa Parcial</mat-checkbox>
+            <!-- overdueClients -->
+            <mat-checkbox fxFlex="1 1 none" matInput name="overdueClients" formControlName="overdueClients">Clientes inadimplentes</mat-checkbox>
+            <!-- fullfiledPayments -->
+            <mat-checkbox fxFlex="1 1 none" matInput name="fullfiledPayments" formControlName="fullfiledPayments">Pagamentos efetuados</mat-checkbox>
+            <!-- openBalance -->
+            <mat-checkbox fxFlex="1 1 none" matInput name="openBalance" formControlName="openBalance">Em aberto</mat-checkbox>
+        </div>
+    </form>
+</fw-search>

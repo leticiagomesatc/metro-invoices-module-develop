@@ -1,0 +1,60 @@
+
+<button mat-fab class="fab-button fab-top" [disabled]="disableExportBtn" (click)="export()" matTooltip="Exportar Relatório de Status Cobrança" matTooltipPosition="above">
+    <mat-icon>cloud_download</mat-icon>
+</button>
+
+<fw-search 
+    class="main-div"
+    [options]="{title:'Painel de Inadimplência'}" 
+    path="overdue-panels"
+    [cols]="cols"
+    [actions]="actions"
+    [enableSelection]="false"
+    [addFields]="['billetId']"
+    (onSearch)="onSearch()"
+    (onAction)="execute($event)"
+    (onClear)="executeClear($event)"
+    #search>
+    <form class="example-form">
+
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="codCliente"  placeholder="Código do Cliente" [(ngModel)]="search.filters.customerSapCode" >
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="cnpj"  placeholder="CNPJ" [(ngModel)]="search.filters.customerCnpj" mask="00.000.000/0000-00">
+            </mat-form-field>
+
+            <fw-autocomplete
+                fxFlex="4 1 auto"
+                flex="4 1 auto"
+                label="Grupo de Faturamento"
+                path="customers"
+                mapAs="id"
+                [subscribeTo]="search"
+                [(value)]="search.filters.customer">
+            </fw-autocomplete>
+            
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput placeholder="Quantidade de dias boleto vencido" type="number" name="dueDays" min="1" [(ngModel)]="search.filters.dueDays">
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-select #statusInput placeholder="Status de Cobrança">
+                    <mat-option>Selecione</mat-option>
+                    <mat-option value="OVERDUE">Vencido</mat-option>
+                    <mat-option value="NEGOTIATION">Em Negociação</mat-option>
+                    <mat-option value="CHARGE_COMPANY">Empresa de Cobrança</mat-option>
+                    <mat-option value="CONTENTIOUS">Contencioso</mat-option>
+                    <mat-option value="SUSPENDED_SERVICE">Serviço Suspenso</mat-option>
+                    <mat-option value="DEACTIVATED_SERVICE">Serviço Desativado</mat-option>
+                    <mat-option value="FINISHED">Concluído</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+        </div>
+        
+    </form>
+    
+</fw-search>

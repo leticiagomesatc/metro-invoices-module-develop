@@ -1,0 +1,58 @@
+<ul class="nav nav-pills" *ngIf="strategy == 'FLAT'">
+    <li class="nav-item" *ngFor="let route of hierarchicalRoutes">
+        <a class="nav-link mt-2" [routerLink]="route.path" *ngIf="auth.hasRole(route.data.hasRole)" >{{route.data.title}}</a>
+    </li>
+    
+</ul>
+
+<div class="btn-group" *ngIf="strategy == 'HIERARCHICAL'"> 
+    <div  *ngFor="let route of hierarchicalRoutes">
+        <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            {{route.data.title}}
+        </button>
+        <div class="dropdown-menu" >
+            <a class="dropdown-item" *ngFor="let subRoute of route.subRoutes" [routerLink]="subRoute.path">{{subRoute.data.title}}</a>
+            
+        </div>
+    </div>
+</div>
+
+
+<div class="container-fluid" id="menuHierarchies" *ngIf="strategy == 'HIERARCHICAL_CARDS'">
+  
+    <!--  Cards-->
+    <div class="row mt-4" >
+      <div class="col-xl-6 col-sm-6 mb-3" *ngFor="let route of hierarchicalRoutes">
+        <div class="card card-aTower text-aTower bg-white o-hidden h-100 ">
+          <div class="card-body">
+            <i class="fa fa-fw fa-map-marker-alt"></i>
+            <div class="float-right mb-3">{{route.data.title}}</div>
+          </div>
+         <!-- <a class="card-footer bg-aTower text-white clearfix small z-1 "  >
+            <span class="float-left"></span>
+            <span class="float-right">
+               
+                      
+              
+            </span>
+            
+            
+          </a>  -->
+            <button type="button" (click)="show(route)" class="btn btn-danger  z-1 "   aria-haspopup="true" aria-expanded="false">
+                    Acessar <i class="fa ml-2" [ngClass]="{'fa-caret-down':!isExpanded(route), 'fa-caret-up':isExpanded(route)}"></i>
+            </button>
+            <div *ngIf="isExpanded(route)" class="module-options row" style="background-color: #f5f5f5">
+                <div class="card-body">
+                    <a  *ngFor="let subRoute of route.subRoutes"  role="button" class="btn col-6"  [routerLink]="'/'+subRoute.path" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-arrow-circle-right mr-2"></i>{{subRoute.data.title}}
+                    </a>
+                </div>
+            </div>
+                
+             
+        </div>
+      </div>
+      
+    </div>
+  </div>
+

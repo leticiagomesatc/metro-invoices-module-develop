@@ -1,0 +1,43 @@
+<h1 mat-dialog-title>Confirmar</h1>
+<form [formGroup]="form">
+    <div fxLayout="row" fxLayoutGap="20px" class="msg">
+        {{data.msg}}
+    </div>
+    <div fxLayout="row" fxLayoutGap="20px">
+        <mat-form-field fxFlex="1 1 auto">
+            <mat-label>Justificativa</mat-label>
+            <mat-select formControlName="justification" required>
+                <mat-option *ngFor="let justification of data.justifications" [value]="justification">{{justification.justificationDescription}}</mat-option>
+            </mat-select>
+            <mat-error>{{validate.message(form.controls.justification)}}</mat-error>
+        </mat-form-field>
+
+
+    </div>
+    <div fxLayout="row" fxLayoutGap="20px" *ngIf="data.outOfPeriod">
+            <mat-error>{{validate.message(form.controls.attachments)}}</mat-error>
+        <button type="button"   mat-raised-button class="primary btn-main" [matTooltip]="fileNameString" [matBadge]="fileSize" 
+            matBadgePosition="above after" matBadgeColor="accent" (click)="invokeUploadModal()">
+            Anexar Arquivos
+        </button>
+       
+        <button type="button" mat-icon-button class="tooltip" (click)="removeAllAttachments()">
+            <mat-icon>cancel</mat-icon>
+        </button>
+    </div>
+
+    <mat-card-actions align="right">
+        <button mat-raised-button class="secondary-dark btn-main" (click)="close()">Cancelar</button>
+        <button mat-raised-button class="primary btn-main" (click)="confirm()">Confirmar</button>
+    </mat-card-actions>
+    <div style="display: none; max-height: 0px;"> 
+        <input-file 
+            #inputComponent 
+            sizeLimit="50"
+		    fileAccept="*"  
+            (acceptedFile)="acceptFile($event)" 
+            (rejectedFile)="rejectFile($event)" 
+            formControlName="attachments">
+        </input-file> 
+    </div>
+</form>

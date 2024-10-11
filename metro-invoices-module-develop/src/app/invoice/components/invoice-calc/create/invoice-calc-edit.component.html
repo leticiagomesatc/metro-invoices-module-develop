@@ -1,0 +1,269 @@
+<fw-edit style="margin-top: 30px !important;"
+    [options]="{
+        insertTitle:'Gerar Memória de Cálculo',
+        buttonSave: 'Gerar',
+        disabledSave: dataSourceCustomerPeriod?.data?.length > 0 
+    }"
+    path="invoice-calc/create"
+    messageSave='AT-S004'
+    isResponseSave=true
+    [isRedirectTo]="dataSourceCustomerPeriod?.data?.length === 0"
+    routeTo="invoice-calc"
+    [form]="form"
+    (onSave)="generate()"
+    (onSuccess)="cleanSelectedLot()"
+    [validateFn]="validateForm"
+    [serializeFn]="serializeFn"
+    [saveButton]="!generateLot"
+    [hasDiscountInvoice]="true"
+    [requestWithTimeout]="true"
+    messageErrorTimeout='ERROR-TIME-OUT'
+    #edit>
+
+  <form class="example-form" [formGroup]="form">
+    <div fxLayout="row" fxLayoutGap="20px">      
+      <mat-label class="align-label">Gerar Faturamento/Cálculo de Memória em Lote</mat-label>
+
+      <mat-radio-group class="radio-group head-fields" formControlName="generateInLote">
+        <mat-radio-button class="radio-button" *ngFor="let status of yesNoStatus" [value]="status.key" [disabled]="selectedLot" (click)="radioChangeLote(status.key)">
+          {{status.description}}
+        </mat-radio-button>
+      </mat-radio-group>
+      
+      <div style="width:100%; display: flex; align-items: center;">
+        <div>
+          <mat-progress-spinner
+              style="margin-right: 15px"
+              *ngIf="daysDisabled"
+              color="accent"
+              mode="indeterminate"
+              diameter="30"
+              strokeWidth="5">
+          </mat-progress-spinner>
+        </div>
+        <mat-form-field fxFlex="1 1 auto" >
+          <mat-label>Todas as Memórias de Cálculo programadas para o dia</mat-label>
+          <mat-select formControlName="programmedDay" [disabled]="(!generateLot || daysDisabled) || selectedLot" (selectionChange)="selectDays($event)" > 
+            <mat-option *ngFor="let programmedCustomerDay of programmedCustomerDays" [value]="programmedCustomerDay.dayAsString">
+              {{programmedCustomerDay.renderDay()}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+    <div fxLayout="row" fxLayoutGap="20px">
+
+      <mat-form-field style="width: 260px;"> <!-- fxFlex="1 1 auto" -->
+        <input matInput name="comp" placeholder="Competência" [disabled]="selectedLot"
+               [matDatepicker]="dp" autocomplete="off" readonly [formControl]="cmpControl">
+        <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+        <mat-datepicker #dp startView="multi-year" [disabled]="selectedLot"
+                        (yearSelected)="chosenYearHandler($event)"
+                        (monthSelected)="chosenMonthHandler($event, dp)"
+        >
+        </mat-datepicker>
+        <button *ngIf="!!cmpControl.value" mat-icon-button matSuffix [disabled]="selectedLot" (click)="clearPeriod()">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <mat-form-field *ngIf="!generateLot" fxFlex="1 1 auto">
+        <input type="text" placeholder="Operadora" aria-label="Operadoras" 
+          matInput [matAutocomplete]="auto" [formControl]="operatorControl" formControlName="operatorsControlName">
+        <button *ngIf="!!operatorControl.value" mat-icon-button matSuffix (click)="clearOperator()">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-form-field>   
+      <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+        <mat-option *ngFor="let operator of filteredOperators | async" [value]="selectedOperators">
+          <div (click)="optionClicked($event, operator)">
+            <mat-checkbox [checked]="operator.selected" (change)="toggleSelection(operator)" (click)="$event.stopPropagation()">
+              {{ operator.name }}
+            </mat-checkbox>
+          </div>
+        </mat-option>
+      </mat-autocomplete>
+    </div>
+
+    <div fxLayout="row" fxLayoutGap="20px">
+
+      <mat-form-field *ngIf="!generateLot" style="width: 260px;">
+        <input type="text" placeholder="Código do Cliente" aria-label="Código do Cliente"
+          matInput [matAutocomplete]="autoCliente" [formControl]="sapCodecontrol">
+        <button *ngIf="!!sapCodecontrol.value" mat-icon-button matSuffix (click)="clearSapCodeAndCustomers()">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-form-field>
+      <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayFnSapCode">
+        <mat-option *ngFor="let sap of filteredSapCode | async" [value]="selectedSapCode">
+          <div (click)="optionClickedSapCode($event, sap)">
+            <mat-checkbox [checked]="sap.selected" (change)="toggleSelectionSapCode(sap)" (click)="$event.stopPropagation()">
+              {{ sap.sapCode }}
+            </mat-checkbox>
+          </div>
+        </mat-option>
+      </mat-autocomplete>
+
+      <mat-form-field *ngIf="!generateLot" fxFlex="1 1 auto">
+        <input type="text" placeholder="Grupo de Faturamento" aria-label="Grupo de Faturamento" 
+          matInput [matAutocomplete]="autoGrupoFaturamento" [formControl]="customerControl" formControlName="customersControlName">
+        <button *ngIf="!!customerControl.value" mat-icon-button matSuffix (click)="clearSapCodeAndCustomers()">
+          <mat-icon>delete</mat-icon>
+        </button>       
+      </mat-form-field>
+      
+      <mat-autocomplete #autoGrupoFaturamento="matAutocomplete" [displayWith]="displayFnCustomer">
+        <mat-option *ngFor="let customer of filteredCustomers | async" [value]="selectedCustomers">
+          <div (click)="optionClickedCustomer($event, customer)">
+            <mat-checkbox [checked]="customer.selected" (change)="toggleSelectionCustomer(customer)" (click)="$event.stopPropagation()">
+              {{ customer.name }}
+            </mat-checkbox>
+          </div>
+        </mat-option>
+      </mat-autocomplete>
+      
+    </div>
+
+    <div fxLayout="row" fxLayoutGap="20px" *ngIf="!generateLot">
+      <div> <!-- fxFlex="1 1 auto" -->
+      <mat-form-field style="width: 260px;"> <!-- fxFlex="1 1 auto" -->
+        <input type="text" (input)="onSearchChangedDiscount($event.target.value)" placeholder="Descontos/Penalidades (Sem Impostos)" aria-label="Descontos/Penalidades (Sem Impostos)"
+        matInput formControlName="discountControl" (input)="changeUnitValue('discountControl')">
+      </mat-form-field>
+    </div>
+    <div fxFlex="1 1 auto">
+      <mat-form-field fxFlex="1 1 98%"*ngIf="discountTypeYes">
+      <mat-label >Tipo Desconto</mat-label>
+        <mat-select [required]="discountTypeYes" formControlName="discountType">
+           <mat-option *ngFor="let discount of discountType" [value]="discount">
+            {{discount.dscDiscountType}}
+          </mat-option>
+        </mat-select>     
+      </mat-form-field>      
+    
+    </div>
+
+
+  </div>
+
+    <div fxLayout="row" fxLayoutGap="20px">
+      <mat-label>Faturar mês anterior</mat-label>
+      <mat-radio-group class="radio-group head-fields" formControlName="fatMonthLast">
+        <mat-radio-button class="radio-button" *ngFor="let status of yesNoStatus" [value]="status.key">
+          {{status.description}}
+        </mat-radio-button>
+      </mat-radio-group>
+
+      <div fxLayout="row" fxLayoutGap="40px">
+        <mat-form-field fxFlex="1 1 auto">
+          <mat-label>Tipo</mat-label>
+          <mat-select formControlName="tributeType" [(value)]="tributeType" (valueChange)="changeTributeType(tributeType)">
+              <mat-option value="0">Todos</mat-option>
+              <mat-option value="1">ST</mat-option>
+              <mat-option value="2">S</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div fxLayout="row" fxLayoutGap="20px" *ngIf="!generateLot">
+      <mat-form-field fxFlex="1 1 auto">
+        <input type="text" placeholder="Multa Contratual" aria-label="Multa Contratual"
+          matInput formControlName="fineControl" (input)="changeUnitValue('fineControl')">
+      </mat-form-field>
+      <mat-form-field fxFlex="1 1 auto">
+        <input type="text" placeholder="Multa Atraso Pagamento" aria-label="Multa Atraso Pagamento"
+          matInput formControlName="finePayControl" (input)="changeUnitValue('finePayControl')">
+       </mat-form-field>
+    </div>
+
+    <div class="mat-elevation-z8" class="search-results" *ngIf="!generateLot">
+      <div class="main-table">
+         <table mat-table  class="search-results" [dataSource]="memoryList" >
+     
+             <ng-container matColumnDef="operadora">
+                <th mat-header-cell *matHeaderCellDef class="generic-header"> Operadora </th>
+                <td mat-cell *matCellDef="let element"> {{element.operadora}} </td>
+             </ng-container>
+             
+             <ng-container matColumnDef="cliente">
+                <th mat-header-cell *matHeaderCellDef class="generic-header"> Código do Cliente </th>
+                <td mat-cell *matCellDef="let element"> {{element.cliente}} </td>
+             </ng-container>
+
+             <ng-container matColumnDef="grupo">
+               <th mat-header-cell *matHeaderCellDef class="generic-header"> Grupo de Faturamento </th>
+               <td mat-cell *matCellDef="let element"> {{element.grupo}} </td>
+             </ng-container>
+
+             <ng-container matColumnDef="cnpj">
+               <th mat-header-cell *matHeaderCellDef class="generic-header"> CNPJ </th>
+               <td mat-cell *matCellDef="let element"> {{element.cnpj}} </td>
+             </ng-container>     
+
+             <ng-container matColumnDef="acao">
+              <th mat-header-cell *matHeaderCellDef class="generic-header">Ação</th>
+              <td mat-cell *matCellDef="let customer">
+                  <mat-icon title="Excluir" class="cursor" (click)="onDeleteCustomer(customer)">delete</mat-icon>
+              </td>
+            </ng-container>
+
+             <tr mat-header-row *matHeaderRowDef="memoryColumns"></tr>
+             <tr mat-row *matRowDef="let row; columns: memoryColumns;"></tr>
+             
+         </table>
+         <mat-paginator 
+         #paginator
+         (page)="onPageEvent($event)"
+         [pageSize]="5"
+         [length]="listSize" >
+     </mat-paginator>
+     </div>
+     </div>
+
+    <div style="display: flex; justify-content: center;">
+      <div class="mat-elevation-z8" class="search-results-half-size" style="display: flex; flex-direction: column; justify-content: center;" *ngIf="dataSourceCustomerPeriod?.data?.length > 0" fxLayoutGap="20px">
+        <table mat-table class="mrgt-20px" style="border-radius: 4px !important;" [dataSource]="dataSourceCustomerPeriod" >     
+
+        <ng-container matColumnDef="Lote">
+          <th mat-header-cell *matHeaderCellDef class="generic-header" > Lote </th>
+          <td mat-cell *matCellDef="let element;"> {{ element.desc }} </td>
+        </ng-container>
+        
+        <ng-container matColumnDef="execution">
+          <th mat-header-cell *matHeaderCellDef class="generic-header" style="text-align: center;"> Ação </th>
+          <td mat-cell *matCellDef="let element; let i = index">
+            <mat-card-actions align="end" style="justify-content: center; margin-bottom: unset;">
+              <button mat-raised-button class="primary btn-main" (click)="saveCustomerPeriod(i)" [disabled]="element.activated || selectedLot"> Gerar </button>
+            </mat-card-actions>
+          </td>
+        </ng-container>
+        
+        <ng-container matColumnDef="loading">
+          <th mat-header-cell *matHeaderCellDef class="generic-header" style="width: 30px;">  </th>
+          <td mat-cell *matCellDef="let element; let i = index">
+            <div [ngClass]="{'hidden':element.hideSpinner}" style="pointer-events: none;">
+              <mat-progress-spinner
+                color="accent"
+                mode="indeterminate"
+                diameter="30"
+                strokeWidth="5">
+              </mat-progress-spinner>
+            </div>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="periodColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: periodColumns;"></tr>
+        
+        </table>
+        <mat-paginator 
+          #paginatorCustomerPeriod
+          (page)="onPageEventCustomerPeriod($event)"
+          [pageSize]="10"
+          [length]="listSizeCustomerPeriod" >
+        </mat-paginator>
+      </div>
+    </div>
+
+  </form>
+</fw-edit>

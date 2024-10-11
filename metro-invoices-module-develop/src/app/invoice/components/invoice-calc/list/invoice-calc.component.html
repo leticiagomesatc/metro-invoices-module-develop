@@ -1,0 +1,173 @@
+<button mat-fab class="fab-button fab-top" [matMenuTriggerFor]="matBulkMenu" [disabled]="!search.hideSpinnerMenu || !search.hideSpinnerSearch">
+  <mat-icon *ngIf="search.hideSpinnerMenu">more_horiz</mat-icon>
+    <mat-progress-spinner
+        style="bottom: 8px"
+        *ngIf="!search.hideSpinnerMenu"
+        color="accent"
+        mode="indeterminate"
+        diameter="40"
+        strokeWidth="5">
+    </mat-progress-spinner>
+</button>
+
+<mat-menu #matBulkMenu="matMenu">
+  <button mat-menu-item [routerLink]="['/invoice-calc/new']" *ngIf="authService.hasRole(userRoles.invoiceCalcEmit)">
+    <mat-icon>done_outline</mat-icon>
+    Gerar Memória de Cálculo
+  </button>
+  <button mat-menu-item (click)="sendEmail()" *ngIf="authService.hasRole(userRoles.invoiceCalcDownload)">
+    <mat-icon>send</mat-icon>
+    Enviar E-mail
+  </button>
+  <button mat-menu-item (click)="executeDeleteInvoicesCalc()" *ngIf="authService.hasRole(userRoles.invoiceCalcCancel)">
+    <mat-icon>cancel</mat-icon>
+    Excluir
+  </button>
+  <button mat-menu-item (click)="openZip()" *ngIf="authService.hasRole(userRoles.invoiceCalcDownload)">
+    <mat-icon>cloud_download</mat-icon>
+    Download Memória de Cálculo
+  </button>
+  <button mat-menu-item (click)="openConfirmExportReport()">
+    <mat-icon>cloud_download</mat-icon>
+    Relatório de Memória de Cálculo
+  </button>
+  <button mat-menu-item (click)="generateGroupIntegration()">
+    <mat-icon>done</mat-icon>
+    Gerar arquivo de integração
+  </button>
+</mat-menu>
+
+<fw-search
+  [options]="{title:'Memória de Cálculo'}"
+  [path]="'invoice-calc'"
+  (onClear)="executeClear($event)"
+  (onSearch)="executeSearch()"
+  [cols]="cols"
+  [actions]="actions"
+  (onAction)="execute($event)"
+  [enableSelection]="true"
+  [selectionCondition]="selectionCondition.bind(this)"
+  [addFields]="['haveInvoiceNote', 'hasFutureInvoice', 'exclusionIndicator', 'isProcessed', 'hasIntegrationFile', 'hasOracleInvoicePermission']"
+  #search>
+  <form class="example-form">
+
+
+      <div fxLayout="row" fxLayoutGap="20px">
+          <mat-form-field fxFlex="1 1 auto">
+            <input matInput name="comp" placeholder="Competência" [(ngModel)]="search.filters.period"
+                [matDatepicker]="dp" autocomplete="off" readonly [formControl]="cmpControl">
+            <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+            <mat-datepicker #dp startView="multi-year" disabled="false"
+            (yearSelected)="chosenYearHandler($event)"
+            (monthSelected)="chosenMonthHandler($event, dp)"
+            >
+            </mat-datepicker>
+            <button *ngIf="!!search.filters.period " mat-icon-button matSuffix (click)="search.filters.period = null" >
+                <mat-icon>delete</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <mat-form-field fxFlex="8 1 auto">
+            <input matInput type="text"
+                placeholder="Operadora"
+                [(ngModel)]="search.filters.operator"
+                [formControl]="operatorControl"
+                (ngModelChange)="renderCustomers()"
+                [matAutocomplete]="autoOperator" autocomplete="off">
+            <mat-autocomplete #autoOperator="matAutocomplete" [displayWith]="displayOperator">
+                <mat-option *ngFor="let operator of filteredOperators | async" [value]="operator">
+                    {{operator.name}}
+                </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-checkbox (change)="renderOperators()" fxFlex="1 1 auto" matInput
+            name="active" [(ngModel)]="search.filters.inactiveOperator">Ver Inativas</mat-checkbox>
+      </div>
+
+      <div fxLayout="row" fxLayoutGap="20px">
+        <mat-form-field fxFlex="1 1 auto">
+          <input matInput name="creationDate" placeholder="Data de Criação" [(ngModel)]="search.filters.creationDate"
+              [matDatepicker]="dpcrtd" autocomplete="off" readonly [formControl]="crtdControl">
+          <mat-datepicker-toggle matSuffix [for]="dpcrtd"></mat-datepicker-toggle>
+          <mat-datepicker #dpcrtd startView="multi-year" disabled="false"
+          (yearSelected)="chosenYearHandlerCrtd($event)"
+          (monthSelected)="chosenMonthHandlerCrtd($event)"
+          >
+          </mat-datepicker>
+          <button *ngIf="!!search.filters.creationDate " mat-icon-button matSuffix (click)="search.filters.creationDate = null" >
+              <mat-icon>delete</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <mat-form-field fxFlex="8 1 auto">            
+          <input matInput type="text"
+              placeholder="Grupo de Faturamento"
+              [(ngModel)]="search.filters.customer"
+              [formControl]="customerControl"
+              [matAutocomplete]="autoCustomer" autocomplete="off">
+          <mat-autocomplete #autoCustomer="matAutocomplete" [displayWith]="displayCustomer">
+              <mat-option *ngFor="let customer of filteredCustomers | async" [value]="customer">
+                  {{customer.name}}
+              </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+
+        <mat-checkbox (change)="renderCustomers()" fxFlex="1 1 auto" matInput
+          name="active" [(ngModel)]="search.filters.inactiveCustomer">Ver Inativas</mat-checkbox>
+      </div>
+
+      <div fxLayout="row" fxLayoutGap="20px">
+        <mat-form-field fxFlex="1 1 auto">
+          <input matInput name="codCliente"  placeholder="Código do Cliente" [(ngModel)]="search.filters.customerSapCode" >
+        </mat-form-field>
+
+        <mat-form-field fxFlex="1 1 auto">
+          <mat-label>Situação</mat-label>
+          <mat-select [(value)]="search.filters.invoiceStatus">
+            <mat-option>Todos</mat-option>
+            <mat-option value="0">Aguardando Processamento</mat-option>
+            <mat-option value="1">Em Processamento</mat-option>
+            <mat-option value="2">Processado</mat-option>
+            <mat-option value="3">Processado com Erro</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field fxFlex="1 1 auto">
+          <mat-label>E-mail</mat-label>
+          <mat-select [(value)]="search.filters.emailStatus">
+              <mat-option>Todos</mat-option>
+              <mat-option value="0">Não Enviado</mat-option>
+              <mat-option value="1">Enviando</mat-option>
+              <mat-option value="2">Enviado</mat-option>
+              <mat-option value="3">Erro</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field fxFlex="1 1 auto">
+          <mat-label>Tipo</mat-label>
+          <mat-select [(value)]="search.filters.tributeTypeId">
+              <mat-option>Todos</mat-option>
+              <mat-option value="1">ST</mat-option>
+              <mat-option value="2">S</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div fxLayout="row" fxLayoutGap="30px">
+        <mat-checkbox fxFlex="1 1 none" matInput name="discount" [(ngModel)]="search.filters.discount" style="padding-right: 40px;">Faturas com Desconto?</mat-checkbox>
+       
+        <mat-label style="padding-top: 32px;">Faturas com Pro Rata?</mat-label>
+        <mat-checkbox fxFlex="1 1 none" matInput name="withProRata" [(ngModel)]="search.filters.withProRata">Sim</mat-checkbox>
+        <mat-checkbox fxFlex="1 1 none" matInput name="withoutProRata" [(ngModel)]="search.filters.withoutProRata">Não</mat-checkbox>
+       
+        <mat-checkbox fxFlex="1 1 none" matInput name="excluded" [(ngModel)]="search.filters.excluded" style="padding-left: 40px;">Exibir Excluídas?</mat-checkbox>
+
+        <mat-label style="padding-left: 40px;padding-top: 32px;">Arquivo de integração gerado?</mat-label>
+        <mat-checkbox fxFlex="1 1 none" matInput name="withIntegration" [(ngModel)]="search.filters.withIntegration">Sim</mat-checkbox>
+        <mat-checkbox fxFlex="1 1 none" matInput name="withOutIntegration" [(ngModel)]="search.filters.withOutIntegration">Não</mat-checkbox>
+       
+      </div>
+
+  </form>
+</fw-search>

@@ -1,0 +1,52 @@
+<br/><br/>
+<mat-expansion-panel expanded="true" disabled="true">
+	<mat-expansion-panel-header #header class="principal">
+		<mat-panel-title class="generic-header">
+            Arquivos Contábeis
+        </mat-panel-title>
+    </mat-expansion-panel-header>
+    <div class="search-filters">
+        <div fxLayout="row" fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="periodBegin" [matDatepicker]="pb" placeholder="Período Inicial"
+                [(ngModel)]="periodBegin" autocomplete="off" readonly>
+                <mat-datepicker-toggle matSuffix [for]="pb"></mat-datepicker-toggle>
+                <mat-datepicker #pb disabled="false"></mat-datepicker>
+                <button *ngIf="!!periodBegin " mat-icon-button matSuffix (click)="periodBegin = null" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-form-field> 
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="periodEnd" [matDatepicker]="pe" placeholder="Período Final"
+                [(ngModel)]="periodEnd" autocomplete="off" readonly>
+                <mat-datepicker-toggle matSuffix [for]="pe"></mat-datepicker-toggle>
+                <mat-datepicker #pe disabled="false"></mat-datepicker>
+                <button *ngIf="!!periodEnd" mat-icon-button matSuffix (click)="periodEnd = null" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-form-field>
+        </div>
+
+        <div fxLayout="row" fxLayout="row" fxLayoutGap="20px">
+            
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-label>Tipo de transação</mat-label>
+                <mat-select #selection [(value)]="accountingTypes" multiple required>
+                    <mat-select-trigger>
+                        {{accountingTypes.length >= 6 ? 'Todos' : concatAccountingTypes(accountingTypes)}}
+                    </mat-select-trigger>
+                    <mat-option (click)="selectAllAccountingTypes()" [value]="0">Marcar Todos</mat-option>
+                    <mat-option (click)="adjustSelectAll()" *ngFor="let accountingType of accountingTypeList" [value]="accountingType.key">{{accountingType.value}}</mat-option>
+                </mat-select>
+                <mat-error *ngIf="!accountingTypes.length">Selecione ao menos um tipo de transação.</mat-error>
+            </mat-form-field>
+            
+            <mat-checkbox fxFlex="1 1 auto" matInput name="alreadyAccounted" [(ngModel)]="alreadyAccounted">Exportar itens já contabilizados</mat-checkbox>
+        </div>
+        
+        <mat-action-row align="end">
+            <button mat-raised-button class="primary btn-main" [disabled]="!hideSpinner" (click)="generateAccountingFile()">Exportar</button>
+        </mat-action-row>
+    </div>
+</mat-expansion-panel>
+	

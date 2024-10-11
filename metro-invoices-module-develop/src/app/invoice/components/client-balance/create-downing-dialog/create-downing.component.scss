@@ -1,0 +1,75 @@
+.mat-expansion-panel {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.mat-row:hover {
+    background-color: #f5f5f5;
+    cursor: pointer;
+}
+
+h1 {
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.search-filters {
+    padding-top: 15px
+}
+.search-results {
+    width: 100%;
+    border-radius: 4px !important
+}
+
+.search-results th:first-child {
+    
+    border-top-left-radius: 4px; 
+    border-bottom-left-radius: 4px;
+}
+.search-results  th:last-child {
+    
+     border-bottom-right-radius: 4px; 
+     border-top-right-radius: 4px; 
+}
+
+form {
+    margin-bottom: 1em;
+}
+
+div + .email-comp {
+    margin-left: 8px;
+}
+
+.main-table{
+    max-height:42vh;
+    overflow-y:scroll;
+    overflow-x:hidden;
+}
+ 
+.generic-header {
+	/* Cor principal do sistema */
+	background-color: #cc0026;
+	color: white;
+	padding: 3px;
+}
+
+td.mat-cell.cdk-column-billetId.mat-column-billetId.ng-star-inserted {
+    display: table-cell !important;
+}
+
+mat-checkbox {
+    margin-top: 0px !important;
+}
+
+.mat-checkbox-layout .mat-checkbox-label {
+    line-height: 0px !important;
+}
+
+.flex-mat-action-row {
+    display: flex;
+    align-items: center
+}
+
+
+.flex-mat-action-row mat-checkbox {
+    padding-right: 20px;
+}

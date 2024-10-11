@@ -1,0 +1,97 @@
+<button mat-fab class="fab-button fab-top" [matMenuTriggerFor]="matBulkMenu"
+  [disabled]="!search.hideSpinnerMenu || !search.hideSpinnerSearch">
+  <mat-icon *ngIf="search.hideSpinnerMenu">more_horiz</mat-icon>
+  <mat-progress-spinner style="bottom: 8px" *ngIf="!search.hideSpinnerMenu" color="accent" mode="indeterminate"
+    diameter="40" strokeWidth="5">
+  </mat-progress-spinner>
+</button>
+
+<mat-menu #matBulkMenu="matMenu">
+  <button mat-menu-item [routerLink]="['/situation-import']">
+    <mat-icon>done_outline</mat-icon>
+    Importar Situação de Memória
+  </button>
+</mat-menu>
+
+<fw-search
+  [options]="{title:'Histórico de Integração'}"
+  [path]="'integration-history'"
+  (onClear)="executeClear($event)"
+  (onSearch)="executeSearch()"
+  [cols]="cols"
+  [actions]="actions"
+  (onAction)="executeAction($event)"
+  [addFields]="['id', 'fileHash', 'isDownloadable', 'isProcessed']"
+  [enableSelection]="true"
+  #search>
+  <form class="example-form">
+    <div fxLayout="row" fxLayoutGap="20px">
+      <mat-form-field fxFlex="1 1 auto">
+        <input matInput name="comp" placeholder="Competência" [(ngModel)]="search.filters.period"
+          [matDatepicker]="dp" autocomplete="off" readonly [formControl]="cmpControl">
+        <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+        <mat-datepicker #dp startView="multi-year" disabled="false"
+        (yearSelected)="chosenYearHandler($event)"
+        (monthSelected)="chosenMonthHandler($event, dp)"
+        >
+        </mat-datepicker>
+        <button *ngIf="!!search.filters.period " mat-icon-button matSuffix (click)="search.filters.period = null" >
+            <mat-icon>delete</mat-icon>
+        </button>
+      </mat-form-field>
+      <mat-form-field fxFlex="8 1 auto">
+        <input matInput type="text"
+          placeholder="Arquivo"
+          [(ngModel)]="search.filters.fileDTO"
+          [formControl]="fileControl"
+          [matAutocomplete]="autoFile" autocomplete="off">
+        <mat-autocomplete #autoFile="matAutocomplete" [displayWith]="displayFile">
+          <mat-option *ngFor="let fileDTO of filteredFiles | async" [value]="fileDTO">
+            {{fileDTO.fileName}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
+    <div fxLayout="row" fxLayoutGap="20px">
+      <mat-form-field fxFlex="1 1 auto">
+        <input matInput name="crtd" placeholder="Data Criação" [(ngModel)]="search.filters.createdOn"
+          [matDatepicker]="dpcrtd" autocomplete="off" readonly [formControl]="crtdControl">
+        <mat-datepicker-toggle matSuffix [for]="dpcrtd"></mat-datepicker-toggle>
+        <mat-datepicker #dpcrtd startView="multi-year" disabled="false"
+          (yearSelected)="chosenYearHandlerCrtd($event)"
+          (monthSelected)="chosenMonthHandlerCrtd($event)">
+        </mat-datepicker>
+        <button *ngIf="!!search.filters.createdOn " mat-icon-button matSuffix (click)="search.filters.createdOn = null" >
+            <mat-icon>delete</mat-icon>
+        </button>
+      </mat-form-field>
+      
+      <mat-form-field fxFlex="4 1 auto">
+        <mat-label>Situação</mat-label>
+        <mat-select [(value)]="search.filters.integrationStatus">
+          <mat-option>Todos</mat-option>
+          <mat-option value="0">Exportado</mat-option>
+          <mat-option value="2">Importado</mat-option>
+          <mat-option value="3">Importado com Erro</mat-option>
+          <mat-option value="4">Pendente</mat-option>
+        </mat-select>
+      </mat-form-field>      
+      <mat-form-field fxFlex="2 1 auto">
+        <mat-label>Origem</mat-label>
+        <mat-select [(value)]="search.filters.IntegrationOrigin">
+          <mat-option>Todos</mat-option>          
+          <mat-option value="0">SICOP</mat-option>
+          <mat-option value="1">Oracle</mat-option>            
+        </mat-select>
+      </mat-form-field>    
+      <mat-form-field fxFlex="2 1 auto">
+        <mat-label>Tipo</mat-label>
+        <mat-select [(value)]="search.filters.TributeType">
+          <mat-option>Todos</mat-option>          
+          <mat-option value="1">ST</mat-option>
+          <mat-option value="2">S</mat-option>            
+        </mat-select>
+      </mat-form-field> 
+    </div>    
+  </form>
+</fw-search>

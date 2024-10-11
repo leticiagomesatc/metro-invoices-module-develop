@@ -1,0 +1,14 @@
+.sla-ok{
+    flex-direction: row;
+    box-sizing: border-box;
+    display: flex;
+    align-content: center;
+    align-items: center;
+    flex: 1 1 auto;
+    gap: 20px;
+    margin-left: 10px;
+
+    .mat-checkbox{
+        margin-top: 0px;
+    }
+}

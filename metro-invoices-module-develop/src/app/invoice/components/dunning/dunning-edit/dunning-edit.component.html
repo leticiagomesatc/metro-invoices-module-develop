@@ -1,0 +1,223 @@
+<fw-edit style="margin-top: 30px !important;"
+    [options]="{
+        insertTitle:'Cadastrar Régua de Cobrança',
+        insertSubtitle : 'Cadastrar Régua de Cobrança',
+        updateTitle : 'Editar Régua de Cobrança',
+        updateSubtitle : 'Editar Régua de Cobrança',
+        buttonSave: 'Salvar'
+    }" 
+    path="dunnings" 
+    routeTo="/dunning"
+    [serializeFn]="serializeFn"
+    [deserializeFn]="deserializeFn"
+    [form]="form" 
+    [fields]="fields"
+    (onLoad)="onLoad($event)"
+    (onSave)="onSave()"
+    #edit
+    *ngIf="continueEdit">
+    <form class="example-form" [formGroup]="form">
+        <div layout="row" fxLayout="row" fxLayoutGap="20px" class="flex content-between align-center">
+            <mat-form-field fxFlex="1 1 auto" >
+                <input matInput formControlName="name" placeholder="Nome*" autocomplete="off">
+                <mat-error>{{validate.message(form.controls.name)}}</mat-error>
+            </mat-form-field>
+            <div>
+                <div class="flex column pad-20">
+                    <span>Régua de cobrança aplicada à: *</span>
+                    <div>
+                        <mat-checkbox fxFlex="1 1 none" matInput name="invoicenotes" formControlName="invoiceNoteApplied" >Notas fiscais de Telecomunicações</mat-checkbox>
+                        <mat-checkbox fxFlex="1 1 none" matInput name="debitnotes" formControlName="debitNoteApplied" >Notas de débito</mat-checkbox>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="flex column pad-20">
+                    <span>&nbsp;</span>
+                    <mat-checkbox fxFlex="1 1 none" matInput name="inactive" formControlName="inactive" >Inativo?</mat-checkbox>
+                </div>
+            </div>
+        </div>
+
+        <mat-tab-group>
+            <mat-tab label="CONFIGURAÇÕES"> 
+                <mat-list>
+                    <mat-list-item>Aviso de Cobrança Automático</mat-list-item>
+                    <div class="flex column item-list">
+                        <div class="flex">
+                            <mat-slide-toggle formControlName="notification" (change)="changeToggle('notificationDueDays', $event)">Notificar o cliente após vencimento do boleto ativo</mat-slide-toggle>
+                            <div class="day-field" *ngIf="form.value.notification">
+                                <mat-form-field class="mat-form-width">
+                                    <input class="day-input" matInput type="number" min="1" formControlName="notificationDueDays">
+                                </mat-form-field> Dias
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <mat-slide-toggle formControlName="duplicateBillet" (change)="changeToggle('duplicateBilletDueDays', $event)">Incluir 2ª Via do Boleto atualizado</mat-slide-toggle>
+                            <div class="day-field" *ngIf="form.value.duplicateBillet">
+                                <mat-form-field class="mat-form-width">
+                                    <input class="day-input" matInput type="number" min="1" formControlName="duplicateBilletDueDays">
+                                </mat-form-field> Dias
+                            </div>
+                        </div>
+                        <mat-slide-toggle formControlName="duplicateBilletInterest">Aplicar Juros ao novo boleto</mat-slide-toggle>
+                        <mat-slide-toggle formControlName="managerInCopy">Incluir gerente de negócio/responsável em cópia no e-mail de notificação</mat-slide-toggle>
+                        <mat-slide-toggle formControlName="emailsInCopy">Incluir lista de e-mail cadastrada em cópia no e-mail de notificação</mat-slide-toggle>
+                    </div>
+
+                    <mat-divider></mat-divider>
+                    <mat-list-item>Aviso de Cobrança Automático - Carta de Cobrança</mat-list-item>
+                    <div class="flex column item-list">
+                        <div class="flex">
+                            <mat-slide-toggle formControlName="letterNotification" (change)="changeToggle('letterNotificationDueDays', $event)">Notificar o cliente com o envio da carta de cobrança</mat-slide-toggle>
+                            <div class="day-field" *ngIf="form.value.letterNotification">
+                                <mat-form-field class="mat-form-width">
+                                    <input class="day-input" matInput type="number" min="1" formControlName="letterNotificationDueDays"> 
+                                </mat-form-field> Dias
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <mat-slide-toggle formControlName="letterDuplicateBillet" (change)="changeToggle('letterDuplicateBilletDueDays', $event)">Incluir 2ª Via do Boleto atualizado na notificação</mat-slide-toggle>
+                            <div class="day-field" *ngIf="form.value.letterDuplicateBillet">
+                                <mat-form-field class="mat-form-width">
+                                    <input class="day-input" matInput type="number" min="1" formControlName="letterDuplicateBilletDueDays">
+                                </mat-form-field> Dias
+                            </div>
+                        </div>
+                        <mat-slide-toggle formControlName="letterDuplicateBilletInterest">Aplicar Juros ao novo boleto</mat-slide-toggle>
+                        <mat-slide-toggle formControlName="letterManagerInCopy">Incluir gerente de negócio/responsável em cópia no e-mail de notificação</mat-slide-toggle>
+                        <mat-slide-toggle formControlName="letterEmailsInCopy">Incluir lista de e-mail cadastrada em cópia no e-mail de notificação</mat-slide-toggle>
+                    </div>
+
+                    <mat-divider></mat-divider>
+                    <mat-list-item>Aviso de Suspensão de Serviço de Cliente</mat-list-item>
+                    <div class="flex column item-list">
+                        <div class="flex">
+                            <mat-slide-toggle formControlName="suspensionActivated" (change)="changeToggle('suspensionDueDays', $event)">Suspender automaticamente o(s) serviço(s) do cliente</mat-slide-toggle>
+                            <div class="day-field" *ngIf="form.value.suspensionActivated">
+                                <mat-form-field class="mat-form-width">
+                                    <input class="day-input" matInput type="number" min="1" formControlName="suspensionDueDays">
+                                </mat-form-field> Dias
+                            </div>
+                        </div>
+                        <mat-slide-toggle formControlName="suspensionNotificationDay">Enviar notificação para e-mails cadastrados um dia antes da suspensão</mat-slide-toggle>
+                        <mat-slide-toggle formControlName="suspensionNotificationManagerInCopy">Copiar o gerente/responsável no aviso antecipado da suspensão</mat-slide-toggle>
+                    </div>
+
+                    <mat-divider></mat-divider>
+                    <mat-list-item>Aviso Negativação do Cliente</mat-list-item>
+                    <div class="flex column item-list">
+                        <div class="flex">
+                            <mat-slide-toggle formControlName="negativationActivated" (change)="changeToggle('negativationDueDays', $event)">Negativar cliente automaticamente SERASA</mat-slide-toggle>
+                            <div class="day-field" *ngIf="form.value.negativationActivated">
+                                <mat-form-field class="mat-form-width">
+                                    <input class="day-input" matInput type="number" min="1" formControlName="negativationDueDays">
+                                    <mat-error>{{validate.message(form.controls.negativationDueDays)}}</mat-error>
+                                </mat-form-field> Dias
+                            </div>
+                        </div>
+                        <mat-slide-toggle formControlName="negativationNotificationDay">Enviar notificação para e-mails cadastrados um dia antes da negativação</mat-slide-toggle>
+                        <mat-slide-toggle formControlName="negativationNotificationManagerInCopy">Copiar o gerente/responsável no aviso antecipado da negativação</mat-slide-toggle>
+                    </div>
+                    
+                    <mat-divider></mat-divider>
+                    <mat-list-item>Aviso Desativação de Serviço(s) do Cliente</mat-list-item>
+                    <div class="flex column item-list">
+                        <div class="flex">
+                            <mat-slide-toggle formControlName="deactivationActivated" (change)="changeToggle('deactivationDueDays', $event)">Desativar automaticamente o(s) serviço(s) do cliente</mat-slide-toggle>
+                            <div class="day-field" *ngIf="form.value.deactivationActivated">
+                                <mat-form-field class="mat-form-width">
+                                    <input class="day-input" matInput type="number" min="1" formControlName="deactivationDueDays">
+                                    <mat-error>{{validate.message(form.controls.deactivationDueDays)}}</mat-error>
+                                </mat-form-field> Dias
+                            </div>
+                        </div>
+                        <mat-slide-toggle formControlName="deactivationNotificationDay">Enviar notificação para e-mails cadastrados um dia antes da desativação</mat-slide-toggle>
+                        <mat-slide-toggle formControlName="deactivationNotificationManagerInCopy">Copiar o gerente/responsável no aviso antecipado da desativação</mat-slide-toggle>
+                    </div>
+
+                    <mat-divider></mat-divider>
+                    <mat-list-item>E-mails para envio de notificações antecipadas da mudança de status na régua de cobrança</mat-list-item>
+                    <div layout="row" fxLayout="row" fxLayoutGap="20px" class="flex align-stretch">
+                        <mat-form-field fxFlex="4 1 auto">
+                            <input class="day-input" matInput type="text" placeholder="Email" formControlName="emailToAdd">
+                            <mat-error>{{validate.message(form.controls.emailToAdd)}}</mat-error>
+                        </mat-form-field>
+                        <mat-action-row align="end">
+                            <button mat-button class="primary btn-main" (click)="addEmail()">Incluir</button>
+                        </mat-action-row>
+                    </div>
+                    <table mat-table class="search-results" [dataSource]="sourceAddedEmails" *ngIf="sourceAddedEmails.data && sourceAddedEmails.data.length > 0">
+
+                        <ng-container matColumnDef="email">
+                            <th mat-header-cell *matHeaderCellDef class="generic-header"> E=mails Cadastrados </th>
+                            <td mat-cell *matCellDef="let element"> 
+                                <label>{{element.email}}</label>
+                            </td>
+                        </ng-container>
+    
+                        <ng-container matColumnDef="action">
+                            <th mat-header-cell *matHeaderCellDef></th>
+                            <td mat-cell *matCellDef="let line"> 
+                                <button mat-icon-button (click)="deleteEmail(line.id)" title="Remover e-mail" >
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </td>
+                        </ng-container>
+                        
+                        <tr mat-header-row *matHeaderRowDef="['email', 'action']"></tr>
+                        <tr mat-row *matRowDef="let row; columns: ['email', 'action'];"></tr>
+                    </table>
+                </mat-list>
+            </mat-tab>
+            <mat-tab label="ASSOCIAR GRUPOS DE FATURAMENTO"> 
+                <div layout="row" fxLayout="row" fxLayoutGap="20px" class="flex align-stretch top-spacing">
+                    <mat-form-field fxFlex="4 1 auto">
+                        <input matInput type="text"
+                            #customerInput
+                            placeholder="Grupo de Faturamento"
+                            formControlName="customer"
+                            [matAutocomplete]="auto" autocomplete="off">
+                        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayCustomer">
+                            <mat-option *ngFor="let option of filteredCustomers | async" [value]="option">
+                                {{option.sapCode}} - {{option.name}}
+                            </mat-option>
+                        </mat-autocomplete>
+                    </mat-form-field>
+                    <mat-action-row align="end">
+                        <button mat-button class="primary btn-main" (click)="addCustomer()">Incluir</button>
+                    </mat-action-row>
+                </div>
+                <table mat-table class="search-results" [dataSource]="sourceAddedCustomers" *ngIf="sourceAddedCustomers.data && sourceAddedCustomers.data.length > 0">
+
+                    <ng-container matColumnDef="sapCode">
+                        <th mat-header-cell *matHeaderCellDef class="generic-header"> Código do Cliente </th>
+                        <td mat-cell *matCellDef="let element"> 
+                            <label>{{element.sapCode}}</label>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="name">
+                        <th mat-header-cell *matHeaderCellDef class="generic-header"> Grupo de Faturamento </th>
+                        <td mat-cell *matCellDef="let element">
+                            <label>{{element.name}}</label>  
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="action">
+                        <th mat-header-cell *matHeaderCellDef></th>
+                        <td mat-cell *matCellDef="let line"> 
+                            <button mat-icon-button (click)="deleteCustomer(line.id)" title="Remover Grupo de Faturamento" >
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="['sapCode', 'name', 'action']"></tr>
+                    <tr mat-row *matRowDef="let row; columns: ['sapCode', 'name', 'action'];"></tr>
+                </table>
+            </mat-tab>
+        </mat-tab-group>
+    </form>
+</fw-edit>
+ 

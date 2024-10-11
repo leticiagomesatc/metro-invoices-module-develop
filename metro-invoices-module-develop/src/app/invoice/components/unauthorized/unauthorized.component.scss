@@ -1,0 +1,35 @@
+.full-body {
+    height: 50px;
+    width: 50px;
+    background-color: white;
+}
+
+.container {
+    margin: 10px auto;
+    width: 98%;
+}
+
+.card-panel {
+    transition: box-shadow .25s;
+    padding: 10px 20px;
+    border-radius: 0px;
+    background-color: #fff;
+}
+
+.container-erro {
+	width: 30%;
+	height: 250px;
+	text-align: center;
+	top: calc(50% - 125px);
+    position: relative;
+    margin-top: 10%;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.erro {
+    padding: 1em;
+}
+
+h1 {
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}

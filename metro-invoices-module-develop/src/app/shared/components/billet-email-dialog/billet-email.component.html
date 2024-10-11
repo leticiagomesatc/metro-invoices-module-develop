@@ -1,0 +1,34 @@
+<h1 mat-dialog-title>{{title}}</h1>
+<form  [formGroup]="form">
+
+    <div fxLayout="row" fxLayoutGap="20px" class="fl">
+        <mat-form-field fxFlex="4 1 auto" class="email-comp">
+            <input matInput type="text" placeholder="E-mail" formControlName="email">
+            <mat-error>{{validate.message(form.controls.email)}}</mat-error>
+        </mat-form-field> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      
+        <button mat-fab class="fab-button fab-top email-comp" (click)="addEmail()">
+            <mat-icon>add</mat-icon>
+        </button>
+    </div>
+    
+</form>
+<div class="mat-elevation-z8" class="search-results" >
+ <div class="main-table">
+    <table mat-table  class="search-results" [dataSource]="emailList" >
+
+        <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef class="generic-header"> E-mail </th>
+            <td mat-cell *matCellDef="let element"> {{element.email}} </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="emailColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: emailColumns;"></tr>
+    </table>
+</div>
+</div>
+
+<mat-card-actions align="end">
+    <button mat-raised-button class="secondary-dark btn-main" (click)="close()">Cancelar</button>
+    <button mat-raised-button class="primary btn-main" (click)="sendEmails()">Enviar</button>
+</mat-card-actions>

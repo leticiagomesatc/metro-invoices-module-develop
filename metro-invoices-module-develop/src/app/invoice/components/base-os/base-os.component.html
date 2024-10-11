@@ -1,0 +1,80 @@
+<br /><br />
+<mat-expansion-panel expanded="true" disabled="true">
+    <mat-expansion-panel-header #header class="principal">
+        <mat-panel-title class="generic-header">
+            Relatório Base de Os's
+        </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <form class="search-filters" [formGroup]="form">
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="periodoInicioBaseAtivo" placeholder="Período inicio de base Ativo"
+                    [matDatepicker]="periodoInicioBaseAtivo"
+                    autocomplete="off" readonly formControlName="periodoInicioBaseAtivo">
+                <mat-datepicker-toggle matSuffix [for]="periodoInicioBaseAtivo"></mat-datepicker-toggle>
+                <mat-datepicker #periodoInicioBaseAtivo disabled="false">
+                </mat-datepicker>
+                <button mat-icon-button matSuffix (click)="form.controls.periodoInicioBaseAtivo.reset()">
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <mat-error>{{validate.message(form.controls.periodoInicioBaseAtivo)}}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="periodoFinalBaseAtivo" placeholder="Período final de base Ativo"
+                    [matDatepicker]="periodoFinalBaseAtivo"
+                    autocomplete="off" readonly formControlName="periodoFinalBaseAtivo">
+                <mat-datepicker-toggle matSuffix [for]="periodoFinalBaseAtivo"></mat-datepicker-toggle>
+                <mat-datepicker #periodoFinalBaseAtivo disabled="false">
+                </mat-datepicker>
+                <button mat-icon-button matSuffix (click)="form.controls.periodoFinalBaseAtivo.reset()">
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <mat-error>{{validate.message(form.controls.periodoFinalBaseAtivo)}}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="dataAberturaOs" placeholder="Inicio Data de abertura da OS"
+                    [matDatepicker]="dataAberturaOs" autocomplete="off" readonly formControlName="dataAberturaOs">
+                <mat-datepicker-toggle matSuffix [for]="dataAberturaOs"></mat-datepicker-toggle>
+                <mat-datepicker #dataAberturaOs disabled="false">
+                </mat-datepicker>
+                <button mat-icon-button matSuffix (click)="form.controls.dataAberturaOs.reset()">
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <mat-error>{{validate.message(form.controls.dataAberturaOs)}}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="dataFechamentoOs" placeholder="Fim Data de abertura da OS"
+                    [matDatepicker]="dataFechamentoOs" autocomplete="off" readonly formControlName="dataFechamentoOs">
+                <mat-datepicker-toggle matSuffix [for]="dataFechamentoOs"></mat-datepicker-toggle>
+                <mat-datepicker #dataFechamentoOs disabled="false">
+                </mat-datepicker>
+                <button mat-icon-button matSuffix (click)="form.controls.dataFechamentoOs.reset()">
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <mat-error>{{validate.message(form.controls.dataFechamentoOs)}}</mat-error>
+            </mat-form-field>
+
+        </div>
+        <div fxLayout="row" fxLayoutGap="20px">
+          <mat-form-field style="width:300px">
+            <mat-select placeholder="Status Atual do Circuito" formControlName="statusAtualCircuito" multiple>
+              <mat-option *ngFor="let status of statuses" [value]="status.key">
+                {{status.value}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <div  fxLayoutGap="5px">
+            <mat-label style="padding-top: 32px !important;">Incluir OS's Simplificadas</mat-label>
+            <mat-checkbox fxFlex="1 1 auto" matInput name="osSimplificada" (change)="check($event.checked)"></mat-checkbox>
+          </div>
+    </div>
+        <mat-action-row align="end">
+            <button mat-button class="primary btn-main" (click)="export()" >Exportar</button>
+        </mat-action-row>
+
+    </form>
+</mat-expansion-panel>

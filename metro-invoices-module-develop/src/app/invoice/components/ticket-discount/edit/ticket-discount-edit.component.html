@@ -1,0 +1,47 @@
+<h1 mat-dialog-title>Editar Ticket de Desconto</h1>
+<form class="example-form" [formGroup]="form">
+<div fxLayout="row" fxLayoutGap="20px">
+    <mat-form-field fxFlex="1 1 auto" >
+        <input matInput name="idSicop" disabled placeholder="ID Sicop:" formControlName="idSicop" [(ngModel)]="data.ticket.idSicop">
+    </mat-form-field>
+
+    <mat-form-field fxFlex="1 1 auto">
+        <input matInput name="desgNV3" disabled required placeholder="Designação NV3:" formControlName="desgNV3" [(ngModel)]="data.ticket.designationNV3" >
+    </mat-form-field>
+    
+    <mat-form-field fxFlex="1 1 auto">
+        <input matInput name="time" required mask="00:00:00" minlength="6" placeholder="Tempo imputável:" formControlName="time" [(ngModel)]="data.ticket.attributableTime">
+    </mat-form-field>
+</div>
+
+<fw-search
+    [path]="'tickets-discount/seach-list-designation'"
+    [cols]="cols"
+    [actions]="actions"
+    (onAction)="execute($event)"
+    [options]="{title:'Lista designação'}"
+    #search>
+    <form class="example-form">
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="2 1 auto">
+                <input matInput type="text"
+                    placeholder="Designação SICOP:"
+                    [(ngModel)]="search.filters.designationSICOP"
+                    [formControl]="designationControlSicop"
+                    [matAutocomplete]="autoDesignationSicop" autocomplete="off">
+                <mat-autocomplete #autoDesignationSicop="matAutocomplete">
+                    <mat-option *ngFor="let designation of filteredDesignationSicop | async" [value]="designation">
+                        {{designation}}
+                    </mat-option>
+                </mat-autocomplete>
+            </mat-form-field>
+        </div>
+    </form>
+</fw-search>
+
+<mat-card-actions align="right">
+    <button mat-raised-button class="secondary-dark btn-main" (click)="close()">Cancelar</button>
+    <button mat-raised-button class="primary btn-main" (click)="edit()" [disabled]="!hideSpinner">Salvar</button>
+</mat-card-actions>
+
+</form>

@@ -1,0 +1,215 @@
+<mat-card *ngIf="isDevMode()">
+        {{ search.filters | json }}
+</mat-card>
+
+
+<button mat-fab class="fab-button fab-top" [matMenuTriggerFor]="matBulkMenu" 
+        *ngIf="authService.hasAllRoles(userRoles.allInvoiceActionRoles)" [disabled]="!search.hideSpinnerMenu || !search.hideSpinnerSearch">
+    <mat-icon *ngIf="search.hideSpinnerMenu">more_horiz</mat-icon>
+    <mat-progress-spinner
+        style="bottom: 8px"
+        *ngIf="!search.hideSpinnerMenu"
+        color="accent"
+        mode="indeterminate"
+        diameter="40"
+        strokeWidth="5">
+    </mat-progress-spinner>
+</button>
+
+<mat-menu #matBulkMenu="matMenu">
+    <button mat-menu-item (click)="issueInvoiceNotes()" *ngIf="authService.hasRole(userRoles.inInvoiceEmit)">
+        <mat-icon>done_outline</mat-icon>
+        Emitir Notas Fiscais/Boletos
+    </button>
+
+    <button mat-menu-item (click)="validateAndSendBilletNoteEmail(undefined, false)" *ngIf="authService.hasRole(userRoles.inInvoiceSend)">
+        <mat-icon>send</mat-icon>
+        Enviar Nota Fiscal/Boleto em E-mail
+    </button>
+
+    <button mat-menu-item (click)="validateAndSendBilletNoteEmail(undefined, true)" *ngIf="authService.hasRole(userRoles.inInvoiceSend)">
+        <mat-icon>send</mat-icon>
+        Enviar Boletos em E-mail
+    </button>
+    <button mat-menu-item (click)="openZip()" *ngIf="authService.hasRole(userRoles.inInvoiceDownload)">
+        <mat-icon>cloud_download</mat-icon>
+        Download ZIP
+    </button>
+</mat-menu>
+
+
+<fw-search
+    [options]="{title:'Listar Faturas'}"
+    [path]="'invoices'"
+    [filtersFn]="prepareFilters"
+    [cols]="cols"
+    [actions]="actions"
+    [enableSelection]="true"
+    [selectionCondition]="selectionCondition.bind(this)"
+    (onAction)="execute($event)"
+    [addFields]="['noteId', 'noteExistsPayedBillet', 'noteExistsBillet', 'quantityBillets']"
+    #search>
+    <form class="example-form">
+
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="comp" placeholder="Competência" [(ngModel)]="search.filters.invoicementPeriod"
+                    [matDatepicker]="dp" autocomplete="off" readonly [formControl]="cmpControl">
+                <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                <mat-datepicker #dp startView="multi-year" disabled="false"
+                (yearSelected)="chosenYearHandler($event)"
+                (monthSelected)="chosenMonthHandler($event, dp)"
+                >
+                </mat-datepicker>
+                <button *ngIf="!!search.filters.invoicementPeriod " mat-icon-button matSuffix (click)="search.filters.invoicementPeriod = null" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-form-field>
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="createdOn" [matDatepicker]="myDatecreatedOn" placeholder="Data de geração da memória de cálculo "
+                    [(ngModel)]="search.filters.createdOn" autocomplete="off" readonly>
+                <mat-datepicker-toggle matSuffix [for]="myDatecreatedOn"></mat-datepicker-toggle>
+                <mat-datepicker #myDatecreatedOn disabled="false"></mat-datepicker>
+                <button *ngIf="!!search.filters.createdOn " mat-icon-button matSuffix (click)="search.filters.createdOn = null" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-form-field>
+
+            <!-- <fw-year-month fxFlex="1 1 auto" [flex]="'1 1 auto'" [(value)]="search.filters.invoicementPeriod"></fw-year-month> -->
+
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="memStart" [matDatepicker]="myDatepicker" placeholder="Apuração inicial da memória "
+                    [(ngModel)]="search.filters.memoryCreateDateStart" autocomplete="off" readonly>
+                <mat-datepicker-toggle matSuffix [for]="myDatepicker"></mat-datepicker-toggle>
+                <mat-datepicker #myDatepicker disabled="false"></mat-datepicker>
+                <button *ngIf="!!search.filters.memoryCreateDateStart " mat-icon-button matSuffix (click)="search.filters.memoryCreateDateStart = null" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="memEnd" [matDatepicker]="myDatepicker2" placeholder="Apuração final da memória"
+                    [(ngModel)]="search.filters.memoryCreateDateEnd" autocomplete="off" readonly>
+                <mat-datepicker-toggle matSuffix [for]="myDatepicker2"></mat-datepicker-toggle>
+                <mat-datepicker #myDatepicker2 disabled="false"></mat-datepicker>
+                <button *ngIf="!!search.filters.memoryCreateDateEnd " mat-icon-button matSuffix (click)="search.filters.memoryCreateDateEnd = null" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-form-field>
+        </div>
+
+
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="codSap"  placeholder="Código do Cliente" [(ngModel)]="search.filters.customerSapCode">
+            </mat-form-field>
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="cnpj" mask="00.000.000/0000-00" placeholder="CNPJ" [(ngModel)]="search.filters.customerCnpj">
+            </mat-form-field>
+
+            <mat-form-field fxFlex="4 1 auto">
+                <input matInput type="text"
+                    placeholder="Grupo de Faturamento"
+                    [(ngModel)]="search.filters.customer"
+                    [formControl]="customerControl"
+                    [matAutocomplete]="auto" autocomplete="off">
+                <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayCustomer">
+                    <mat-option *ngFor="let option of filteredCustomers | async" [value]="option">
+                        {{option.name}}
+                    </mat-option>
+                </mat-autocomplete>
+            </mat-form-field>
+
+
+
+
+        </div>
+
+        <div fxLayout="row" fxLayoutGap="15px">
+
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-label>Fase</mat-label>
+                <mat-select [(value)]="search.filters.phase">
+                    <mat-option>Todas</mat-option>
+                    <mat-option value="INVOICE_CALC">Memória de cálculo</mat-option>
+                    <mat-option value="INVOICE">Fatura/Nota Fiscal</mat-option>
+                    <mat-option value="ACCOUNTING">Contabilidade</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-label>Situação</mat-label>
+                <mat-select [(value)]="search.filters.calcStatus">
+                    <mat-option>Todos</mat-option>
+
+                    <mat-optgroup label="Memória de cálculo">
+                        <mat-option value="WAITING">Aguardando Processamento</mat-option>
+                        <mat-option value="PROCESSING">Em Processamento</mat-option>
+                        <mat-option value="PROCESSED">Processado</mat-option>
+                        <mat-option value="PROCESSED_WITH_ERRORS">Processado com Erro</mat-option>
+                        <mat-option value="SAP_PROCESSING">Em Processamento SAP</mat-option>
+                        <mat-option value="SAP_PROCESSED_WITH_ERRORS">Processado com Erro SAP</mat-option>
+                        <mat-option value="SAP_PROCESSED">Processado SAP</mat-option>
+                        <mat-option value="NF_ERROR">Erro Processamento N.F.</mat-option>
+                    </mat-optgroup>
+
+                    <mat-optgroup label="Fatura/Nota Fiscal">
+                        <mat-option value="CREATED">N.F. Emitida</mat-option>
+                        <mat-option value="CANCELLED">N.F. Cancelada</mat-option>
+                    </mat-optgroup>
+                    <mat-optgroup label="Contabilidade">
+                        <mat-option value="ACCOUNTED">N.F. Contabilizada</mat-option>
+                        <mat-option value="CANCELLED_POST_ACCOUNTING">N.F. Canc. pós Cont.</mat-option>
+                    </mat-optgroup>
+
+
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="noteIssueDate" [matDatepicker]="myDateInssue" placeholder="Data de emissão da nota fiscal"
+                    [(ngModel)]="search.filters.noteIssueDate" autocomplete="off" readonly>
+                <mat-datepicker-toggle matSuffix [for]="myDateInssue"></mat-datepicker-toggle>
+                <mat-datepicker #myDateInssue disabled="false"></mat-datepicker>
+                <button *ngIf="!!search.filters.noteIssueDate " mat-icon-button matSuffix (click)="search.filters.noteIssueDate = null" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-label>Status de e-mail da memória</mat-label>
+                <mat-select [(value)]="search.filters.emailStatus">
+                    <mat-option>Todos</mat-option>
+                    <mat-option value="NAO_ENVIADO">Não Enviado</mat-option>
+                    <mat-option value="ENVIANDO">Enviando</mat-option>
+                    <mat-option value="ENVIADO">Enviado</mat-option>
+                    <mat-option value="ENVIADO">Erro</mat-option>
+
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-label>Status de Pagamento</mat-label>
+                <mat-select [(value)]="search.filters.paymentStatus">
+                    <mat-option>Todos</mat-option>
+                    <mat-option value="OPEN">Em Aberto</mat-option>
+                    <mat-option value="EXPIRED">Vencido</mat-option>
+                    <mat-option value="PAYED">Pago</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+        </div>
+        <div fxLayout="row" fxLayoutGap="5px">
+            <mat-checkbox fxFlex="1 1 none" matInput name="discount" [(ngModel)]="search.filters.discountInvoice">Fatura com desconto?</mat-checkbox>
+            <mat-checkbox fxFlex="1 1 none" matInput name="prorata" [(ngModel)]="search.filters.hasProrata">Pro rata?</mat-checkbox>
+        </div>
+<!--
+        <div fxLayout="row" fxFlexAlign="end" fxLayoutGap="20px">
+
+        </div> -->
+
+
+
+
+
+    </form>
+</fw-search>

@@ -1,0 +1,18 @@
+h1, .msg {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  padding-bottom: 15px;
+}
+
+.no-spinners::-webkit-inner-spin-button,
+.no-spinners::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.mat-form-field {
+  margin-bottom: 15px;
+}
+
+.mat-form-field-lg .mat-form-field-wrapper {
+  padding: 8px 16px;
+}

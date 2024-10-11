@@ -1,0 +1,255 @@
+<br /><br />
+<mat-expansion-panel expanded="true" disabled="true">
+	<mat-expansion-panel-header #header class="principal">
+		<mat-panel-title class="generic-header">
+			Informar Status de Cobrança
+		</mat-panel-title>
+	</mat-expansion-panel-header>
+	<div *ngIf="loadedInfo">
+		<div fxLayout="row" fxLayoutGap="20px">
+			<mat-form-field fxFlex="1 1 auto">
+				<input matInput disabled name="customerSapCode" placeholder="Código do Cliente"
+					[(ngModel)]="headerValue.customerSapCode">
+			</mat-form-field>
+			<mat-form-field fxFlex="6 1 auto">
+				<input matInput disabled name="customerName" placeholder="Grupo de Faturamento"
+					[(ngModel)]="headerValue.customerName">
+			</mat-form-field>
+			<mat-form-field fxFlex="1 1 auto">
+				<input matInput disabled name="customerNationalNumber" placeholder="CNPJ"
+					[(ngModel)]="headerValue.customerNationalNumber">
+			</mat-form-field>
+			<mat-form-field fxFlex="6 1 auto">
+				<input matInput disabled name="salesChannelResponsible" placeholder="Gerente Negócio/Responsável Canal"
+					[(ngModel)]="headerValue.salesChannelResponsible">
+			</mat-form-field>
+		</div>
+		<div fxLayout="row" fxLayoutGap="20px">
+			<mat-form-field fxFlex="1 1 auto">
+				<input matInput disabled name="billetDocNumber" placeholder="Nº Boleto"
+					[(ngModel)]="headerValue.billetDocNumber">
+			</mat-form-field>
+
+			<mat-form-field fxFlex="1 1 auto">
+				<input matInput disabled name="dueDate" placeholder="Vencimento" [(ngModel)]="headerValue.dueDate">
+			</mat-form-field>
+			<mat-form-field fxFlex="1 1 auto">
+				<input matInput disabled name="dueDays" placeholder="Dia(s) Vencido(s)"
+					[(ngModel)]="headerValue.dueDays">
+			</mat-form-field>
+			<mat-form-field fxFlex="1 1 auto">
+				<input matInput disabled name="notes" placeholder="Notas" [(ngModel)]="headerValue.notes">
+			</mat-form-field>
+		</div>
+		<div fxLayout="row" fxLayoutGap="20px">
+
+			<mat-form-field fxFlex="1 1 auto">
+				<input matInput disabled name="createdOn" placeholder="Data de emissão"
+					[(ngModel)]="headerValue.createdOn">
+			</mat-form-field>
+			<mat-form-field fxFlex="1 1 auto">
+				<input matInput disabled name="firstDueDate" placeholder="Vencimento Original"
+					[(ngModel)]="headerValue.firstDueDate">
+			</mat-form-field>
+			<mat-form-field fxFlex="1 1 auto">
+				<input matInput disabled name="billedValue" placeholder="Valor Faturado"
+					[(ngModel)]="headerValue.billedValue">
+			</mat-form-field>
+			<mat-form-field fxFlex="1 1 auto">
+				<input matInput disabled name="openValue" placeholder="Valor em aberto"
+					[(ngModel)]="headerValue.openValue">
+			</mat-form-field>
+			<mat-form-field fxFlex="1 1 auto">
+				<input matInput disabled name="interestFineValue" placeholder="Valor Juros/Multa"
+					[(ngModel)]="headerValue.interestFineValue">
+			</mat-form-field>
+		</div>
+	</div>
+	<form class="example-form" [formGroup]="form">
+		<div fxLayout="row" fxLayoutGap="20px">
+			<mat-form-field fxFlex="1 1 auto">
+				<mat-label>Status</mat-label>
+				<mat-select formControlName="status">
+					<mat-option>Todos</mat-option>
+					<mat-option value="OVERDUE">Vencido</mat-option>
+					<mat-option value="NEGOTIATION">Em Negociação</mat-option>
+					<mat-option value="CHARGE_COMPANY">Empresa de Cobrança</mat-option>
+					<mat-option value="CONTENTIOUS">Contencioso</mat-option>
+					<mat-option value="SUSPENDED_SERVICE">Serviço Suspenso</mat-option>
+					<mat-option value="DEACTIVATED_SERVICE">Serviço Desativado</mat-option>
+					<mat-option value="FINISHED">Concluído</mat-option>
+				</mat-select>
+				<mat-error>{{validate.message(form.controls.status)}}</mat-error>
+			</mat-form-field>
+			<mat-form-field fxFlex="1 1 auto">
+				<input matInput name="supposedPaymentDay" placeholder="Data prevista p/ pagamento"
+					[matDatepicker]="myDateSupposedPaymentDay" autocomplete="off" readonly [min]="today"
+					formControlName="supposedPaymentDay">
+				<mat-datepicker-toggle matSuffix [for]="myDateSupposedPaymentDay"></mat-datepicker-toggle>
+				<mat-datepicker #myDateSupposedPaymentDay disabled="false"></mat-datepicker>
+				<button type="button" mat-icon-button matSuffix (click)="form.controls.supposedPaymentDay.reset()">
+					<mat-icon>delete</mat-icon>
+				</button>
+				<mat-error>{{validate.message(form.controls.supposedPaymentDay)}}</mat-error>
+			</mat-form-field>
+			<mat-form-field fxFlex="1 1 auto">
+				<input matInput name="chargingCustomerSentDay" placeholder="Data de envio p/ Empresa Cobrança"
+					[matDatepicker]="myDateChargingCustomerSentDay" autocomplete="off" readonly
+					formControlName="chargingCustomerSentDay">
+				<mat-datepicker-toggle matSuffix [for]="myDateChargingCustomerSentDay"></mat-datepicker-toggle>
+				<mat-datepicker #myDateChargingCustomerSentDay disabled="false"></mat-datepicker>
+				<button type="button" mat-icon-button matSuffix (click)="form.controls.chargingCustomerSentDay.reset()">
+					<mat-icon>delete</mat-icon>
+				</button>
+				<mat-error>{{validate.message(form.controls.chargingCustomerSentDay)}}</mat-error>
+			</mat-form-field>
+			<mat-form-field fxFlex="1 1 auto">
+				<input matInput name="chargingCustomerReturnDay" placeholder="Data de retorno p/ Empresa Cobrança"
+					[matDatepicker]="myDateChargingCustomerReturnDay" autocomplete="off" readonly
+					formControlName="chargingCustomerReturnDay">
+				<mat-datepicker-toggle matSuffix [for]="myDateChargingCustomerReturnDay"></mat-datepicker-toggle>
+				<mat-datepicker #myDateChargingCustomerReturnDay disabled="false"></mat-datepicker>
+				<button type="button" mat-icon-button matSuffix
+					(click)="form.controls.chargingCustomerReturnDay.reset()">
+					<mat-icon>delete</mat-icon>
+				</button>
+				<mat-error>{{validate.message(form.controls.chargingCustomerReturnDay)}}</mat-error>
+			</mat-form-field>
+
+			<mat-form-field fxFlex="4 1 auto" class="example-full-width">
+				<textarea matInput placeholder="Observação" formControlName="observation"></textarea>
+				<mat-error>{{validate.message(form.controls.observation)}}</mat-error>
+			</mat-form-field>
+
+			<div>
+				<button type="button" mat-icon-button (click)="invokeUploadModal()" matTooltip="Anexar Arquivos"
+					[matBadge]="fileSize" matBadgePosition="above after" matBadgeColor="accent">
+					<mat-icon>insert_drive_file</mat-icon>
+				</button>
+
+				<button type="button" mat-icon-button class="tooltip" matTooltip="Remover Anexos">
+					<mat-icon (click)="removeAllAttachments()">cancel</mat-icon>
+				</button>
+			</div>
+
+		</div>
+		<div style="display: none; max-height: 0px;">
+			<input-file #inputComponent sizeLimit="50" fileAccept="*" (acceptedFile)="acceptFile($event)"
+				(rejectedFile)="rejectFile($event)" formControlName="attachments">
+			</input-file>
+		</div>
+		<mat-action-row align="end">
+			<button mat-raised-button class="primary btn-main" [disabled]="disableSaveBtn" (click)="saveCharge()">Salvar</button>
+			<button mat-button class="secondary-dark btn-main" type="button" (click)="goBack()">Voltar</button>
+		</mat-action-row>
+	</form>
+	<mat-list>
+		<div *ngIf="hasDunningExecutions">
+			<mat-divider></mat-divider>
+			<mat-list-item>Régua de Cobrança - {{dunningName}} </mat-list-item>
+			<table mat-table class="search-results" [dataSource]="dunningDataSource">
+				<ng-container matColumnDef="action">
+					<th mat-header-cell *matHeaderCellDef class="generic-header"> Ação </th>
+					<td mat-cell *matCellDef="let element">
+						<label>{{element.action}}</label>
+					</td>
+				</ng-container>
+				<ng-container matColumnDef="condition">
+					<th mat-header-cell *matHeaderCellDef class="generic-header"> Condição </th>
+					<td mat-cell *matCellDef="let element">
+						<label>{{element.condition}}</label>
+					</td>
+				</ng-container>
+				<ng-container matColumnDef="status">
+					<th mat-header-cell *matHeaderCellDef class="generic-header"> Status </th>
+					<td mat-cell *matCellDef="let element">
+						<label>{{element.status}}</label>
+					</td>
+				</ng-container>
+				<ng-container matColumnDef="supposedExecutionDate">
+					<th mat-header-cell *matHeaderCellDef class="generic-header"> Data/Hora Execução Prevista </th>
+					<td mat-cell *matCellDef="let element">
+						<label>{{element.supposedExecutionDate}}</label>
+					</td>
+				</ng-container>
+				<ng-container matColumnDef="executionDate">
+					<th mat-header-cell *matHeaderCellDef class="generic-header"> Data/Hora Execução </th>
+					<td mat-cell *matCellDef="let element">
+						<label>{{element.executionDate}}</label>
+					</td>
+				</ng-container>
+				<tr mat-header-row
+					*matHeaderRowDef="['action','condition','status','supposedExecutionDate','executionDate']"
+					class="generic-header-inner-list"></tr>
+				<tr mat-row
+					*matRowDef="let innerLine; columns: ['action','condition','status','supposedExecutionDate','executionDate']">
+				</tr>
+			</table>
+		</div>
+		<div *ngIf="hasPreviousCharges">
+
+			<mat-divider></mat-divider>
+			<mat-list-item>Histórico de Alteração de Status</mat-list-item>
+			<table mat-table class="search-results" [dataSource]="previousChargesDataSource">
+				<ng-container matColumnDef="status">
+					<th mat-header-cell *matHeaderCellDef class="generic-header"> Status </th>
+					<td mat-cell *matCellDef="let element">
+						<label>{{element.status}}</label>
+					</td>
+				</ng-container>
+				<ng-container matColumnDef="supposedPaymentDay">
+					<th mat-header-cell *matHeaderCellDef class="generic-header"> Data Prevista Pag. </th>
+					<td mat-cell *matCellDef="let element">
+						<label>{{element.supposedPaymentDay}}</label>
+					</td>
+				</ng-container>
+				<ng-container matColumnDef="chargingCustomerSentDay">
+					<th mat-header-cell *matHeaderCellDef class="generic-header"> Data Envio Empresa Cobrança </th>
+					<td mat-cell *matCellDef="let element">
+						<label>{{element.chargingCustomerSentDay}}</label>
+					</td>
+				</ng-container>
+				<ng-container matColumnDef="chargingCustomerReturnDay">
+					<th mat-header-cell *matHeaderCellDef class="generic-header"> Data Retorno Empresa Cobrança
+					</th>
+					<td mat-cell *matCellDef="let element">
+						<label>{{element.chargingCustomerReturnDay}}</label>
+					</td>
+				</ng-container>
+				<ng-container matColumnDef="observation">
+					<th mat-header-cell *matHeaderCellDef class="generic-header"> Observação </th>
+					<td mat-cell *matCellDef="let element">
+						<label>{{element.observation}}</label>
+					</td>
+				</ng-container>
+				<ng-container matColumnDef="createdOn">
+					<th mat-header-cell *matHeaderCellDef class="generic-header"> Data/Hora Alteração Status </th>
+					<td mat-cell *matCellDef="let element">
+						<label>{{element.createdOn}}</label>
+					</td>
+				</ng-container>
+				<ng-container matColumnDef="user">
+					<th mat-header-cell *matHeaderCellDef class="generic-header"> Usuário </th>
+					<td mat-cell *matCellDef="let element">
+						<label>{{element.user}}</label>
+					</td>
+				</ng-container>
+				<ng-container matColumnDef="action">
+					<th mat-header-cell *matHeaderCellDef class="generic-header"> </th>
+					<td mat-cell *matCellDef="let element">
+						<button matTooltip="Download Arquivos" type="button" *ngIf="element.attachments.length >= 1"
+							mat-icon-button (click)="downloadAttachments(element)">
+							<mat-icon>cloud_download</mat-icon>
+						</button>
+					</td>
+				</ng-container>
+				<tr mat-header-row
+					*matHeaderRowDef="['status','supposedPaymentDay','chargingCustomerSentDay','chargingCustomerReturnDay','observation','createdOn','user', 'action']"
+					class="generic-header-inner-list"></tr>
+				<tr mat-row
+					*matRowDef="let innerLine; columns: ['status','supposedPaymentDay','chargingCustomerSentDay','chargingCustomerReturnDay','observation','createdOn','user', 'action']">
+				</tr>
+			</table>
+		</div>
+	</mat-list>
+</mat-expansion-panel>

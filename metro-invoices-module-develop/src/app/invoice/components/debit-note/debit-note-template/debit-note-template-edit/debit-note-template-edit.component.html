@@ -1,0 +1,191 @@
+<fw-edit style="margin-top: 30px !important;"
+    [options]="{
+        insertTitle:'Cadastrar Novo Template de Nota de Débito',
+        insertSubtitle : 'Crie novos templates de nota de débito para posterior emissão',
+        updateTitle : 'Editar Template de Nota de Débito',
+        updateSubtitle : 'Edite o template de uma nota de débito.',
+        buttonSave: 'Salvar',
+        disabledSave: disableImport
+    }" 
+    [serializeFn]="serializeFn"
+    [deserializeFn]="deserializeFn"
+    path="debit-notes/templates" 
+    routeTo="/debit-notes/templates"
+    [validateFn]="validateForm"
+    [form]="form" 
+    [fields]="fields"
+    (onLoad)="onLoad($event)"
+    #edit>
+
+
+    <form class="example-form" [formGroup]="form">
+
+        <div fxLayout="row" fxLayoutGap="20px">
+           
+            <mat-form-field fxFlex="4 1 auto">
+                <input matInput type="text"
+                    placeholder="Grupo de Faturamento*"
+                    formControlName="customer"
+                    [matAutocomplete]="auto" autocomplete="off">
+                <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayCustomer">
+                    <mat-option *ngFor="let option of filteredCustomers | async" [value]="option">
+                        {{option.sapCode}} - {{option.name}}
+                    </mat-option>
+                </mat-autocomplete>
+            </mat-form-field>
+
+            <fw-autocomplete 
+                fxFlex="1 1 auto" 
+                flex="1 1 auto" 
+                label="Local de Negócio" 
+                path="business-locals" 
+                [subscribeTo]="edit"
+                [control]="form['controls'].businessLocal">
+
+            </fw-autocomplete> 
+
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-label>Tipo de Nota de Débito</mat-label>
+                <mat-select formControlName="type"  style=" margin-top: 15px"> 
+                    <mat-option value="ACCOUNTS_MEETING">Encontro de contas</mat-option>
+                    <mat-option value="FINE">Multa</mat-option>
+                    <mat-option value="PAYMENT">Pagamento</mat-option>
+                    <mat-option value="PREPAYMENT">Pagamento Antecipado</mat-option>
+                </mat-select>
+                <mat-error>{{validate.message(form.controls.type)}}</mat-error>
+            </mat-form-field>
+ 
+        </div>
+
+        <div fxLayout="row" fxLayoutGap="20px">
+            <fw-autocomplete 
+                style="width:33%;"
+                label="Produto" 
+                path="assignment-products" 
+                [subscribeTo]="edit"
+                [control]="form['controls'].product">
+            </fw-autocomplete>
+
+            <mat-form-field 
+                style="width:66%;"
+                >
+                <input matInput formControlName="description" placeholder="Descrição da Nota de Débito*">
+                <mat-error>{{validate.message(form.controls.description)}}</mat-error>
+            </mat-form-field>
+
+        </div>
+
+
+        <div fxLayout="row" fxLayoutGap="20px">
+            
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput style="text-align: right" [numberMaxLength]="2" [onlyInt]="true" formControlName="emissionDay" placeholder="Dia da Emissão*" autocomplete="off">
+                <mat-error>{{validate.message(form.controls.emissionDay)}}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 0 auto">
+                <input matInput  style="text-align: right" [numberMaxLength]="2" [onlyInt]="true" formControlName="dueDateDay" placeholder="Dia do Vencimento*" autocomplete="off">
+                <mat-error>{{validate.message(form.controls.dueDateDay)}}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto" >
+                <input matInput style="text-align: right" mask="dot_separator.2" formControlName="monthlyAmout" placeholder="Valor Mensal*" autocomplete="off">
+                <span matPrefix>R$&nbsp;</span>
+                <!-- <span matSuffix>.00</span> -->
+                <mat-error>{{validate.message(form.controls.monthlyAmout)}}</mat-error>
+            </mat-form-field>
+        </div>
+
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="issueStart" [matDatepicker]="myDatepicker" placeholder="Data de Início de Vigência"
+                     autocomplete="off" readonly formControlName="issueStart">
+                <mat-datepicker-toggle matSuffix [for]="myDatepicker"></mat-datepicker-toggle>
+                <mat-datepicker #myDatepicker [disabled]="disableImport"></mat-datepicker>
+                <button *ngIf="!!form.controls.issueStart.value " mat-icon-button matSuffix (click)="form.controls.issueStart.reset()" [disabled]="disableImport" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <mat-error>{{validate.message(form.controls.issueStart)}}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field fxFlex="1 1 auto">
+                    <input matInput name="issueEnd" [matDatepicker]="myDatepickerEnd" placeholder="Data de Fim de Vigência"
+                    autocomplete="off" readonly formControlName="issueEnd">
+               <mat-datepicker-toggle matSuffix [for]="myDatepickerEnd"></mat-datepicker-toggle>
+               <mat-datepicker #myDatepickerEnd [disabled]="disableImport"></mat-datepicker>
+               <button *ngIf="!!form.controls.issueEnd.value " mat-icon-button matSuffix (click)="form.controls.issueEnd.reset()" [disabled]="disableImport" >
+                   <mat-icon>delete</mat-icon>
+               </button>
+               <mat-error>{{validate.message(form.controls.issueEnd)}}</mat-error>
+            </mat-form-field>
+            
+            <mat-checkbox fxFlex="1 1 auto" matInput name="active"  formControlName="inactive">Inativo?</mat-checkbox>
+        </div>
+
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="1 0 auto">
+                <input matInput maxlength="255" formControlName="dischargeNotice" placeholder="Observação da Quitação" autocomplete="off">
+            </mat-form-field>
+        </div>
+
+
+        
+
+    </form>
+
+<!-- 
+
+    <mat-expansion-panel style="max-width: 50%; margin-top: 2%" >
+        <mat-expansion-panel-header class="secondary-header  ">
+            <mat-panel-title class="">
+                    Impostos
+            </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        
+        
+    </mat-expansion-panel> -->
+    <div class="row">
+        <div class="col-3">
+            <mat-table [dataSource]="taxesDataSource" class="mat-elevation-z0 df-table  mt-3">
+                <ng-container matColumnDef="taxName">
+                    <th mat-header-cell *matHeaderCellDef class="secondary-header  w-50"> Impostos tributados </th>
+                    <td mat-cell *matCellDef="let element" [hidden]="!element.showTribbuted" > {{element.name}} </td>
+                </ng-container>
+                <ng-container matColumnDef="enable">
+                    <th mat-header-cell *matHeaderCellDef class="secondary-header  w-25"> Aplicar? </th>
+                    <td mat-cell *matCellDef="let element" class="text-align:center !important" [hidden]="!element.showTribbuted"> 
+                        <mat-checkbox [disabled]="disableTaxes" (change)="onTaxChange($event, element, 'tributed')" [checked]="!!element.group && !!element.group.value.tributed" ></mat-checkbox>
+                    </td>
+                </ng-container>
+                
+                <tr mat-header-row *matHeaderRowDef="['taxName','enable']"  ></tr>
+                <tr mat-row *matRowDef="let row; columns: ['taxName','enable'];"  ></tr>
+        
+            </mat-table>
+        </div>
+
+        <div class="col-4">
+            <mat-table [dataSource]="taxesDataSource" class="mat-elevation-z0 df-table  mt-3">
+                <ng-container matColumnDef="taxName">
+                    <th mat-header-cell *matHeaderCellDef class="secondary-header  w-50"> Impostos retidos na fonte </th>
+                    <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+                </ng-container>
+                <ng-container matColumnDef="enable">
+                    <th mat-header-cell *matHeaderCellDef class="secondary-header  w-25"> Aplicar? </th>
+                    <td mat-cell *matCellDef="let element" class="text-align:center !important"> 
+                        <mat-checkbox [disabled]="disableTaxes" (change)="onTaxChange($event, element, 'sourceRetained')" [checked]="!!element.group && !!element.group.value.sourceRetained" ></mat-checkbox>
+                    </td>
+                </ng-container>
+                
+                <tr mat-header-row *matHeaderRowDef="['taxName','enable']"  ></tr>
+                <tr mat-row *matRowDef="let row; columns: ['taxName','enable'];"  ></tr>
+        
+            </mat-table>
+        </div>
+    </div>
+   
+
+
+</fw-edit>
+ 

@@ -1,0 +1,28 @@
+<h1 mat-dialog-title>Confirmação de Alteração</h1>
+<form class="example-form" [formGroup]="form">
+  <div>
+    <p>Para confirmar a reabertura da memória de cálculo devido ao cancelamento de nota fiscal, confirme o nome do grupo
+      de faturamento e a competência da memória de cálculo que deseja reabrir.</p>
+    <div fxLayout="row" fxLayoutGap="20px">
+      <mat-form-field class="mat-form-field-lg" fxFlex="8 1 auto">
+        <input matInput name="billingGroupName" type="text" placeholder="Nome do Grupo de Faturamento" formControlName="billingGroupName">
+      </mat-form-field>
+
+      <mat-form-field style="margin-bottom: 16px;">
+        <input matInput name="period" placeholder="Competência (mm/aaaa)"
+               [matDatepicker]="periodPicker" autocomplete="off" readonly [formControl]="cmpControl">
+        <mat-datepicker-toggle matSuffix [for]="periodPicker"></mat-datepicker-toggle>
+        <mat-datepicker #periodPicker startView="multi-year" disabled="false"
+                        (yearSelected)="chosenYearHandler($event)"
+                        (monthSelected)="chosenMonthHandler($event, periodPicker)">
+        </mat-datepicker>
+      </mat-form-field>
+    </div>
+
+  </div>
+
+  <mat-card-actions align="right">
+    <button mat-raised-button class="secondary-dark btn-main" (click)="cancel($event)">Cancelar</button>
+    <button mat-raised-button class="primary btn-main" (click)="confirm($event)">Confirmar</button>
+  </mat-card-actions>
+</form>

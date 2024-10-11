@@ -1,0 +1,22 @@
+<button mat-fab class="fab-button fab-top" (click)="generate()"  matTooltip="Gerar remessas" matTooltipPosition="above" *ngIf="auth.hasRole(userRoles.inRemittanceEmit)" [disabled]="!search.hideSpinnerMenu">
+    <mat-icon *ngIf="search.hideSpinnerMenu">autorenew</mat-icon>
+    <mat-progress-spinner
+        style="bottom: 8px"
+        *ngIf="!search.hideSpinnerMenu"
+        color="accent"
+        mode="indeterminate"
+        diameter="40"
+        strokeWidth="5">
+    </mat-progress-spinner>
+</button>
+
+
+<fw-search 
+    [options]="{title:'Listar Remessas'}" 
+    path="remittances" 
+    [cols]="cols" 
+    [actions]="actions"
+    (onAction)="execute($event)"
+    #search>
+   
+</fw-search>

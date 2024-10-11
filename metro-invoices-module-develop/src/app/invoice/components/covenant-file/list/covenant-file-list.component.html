@@ -1,0 +1,79 @@
+<mat-card *ngIf="isDevMode()">
+        {{ search.filters | json }}
+</mat-card>
+
+
+<button mat-fab class="fab-button fab-top" [matMenuTriggerFor]="matBulkMenu" [disabled]="!search.hideSpinnerMenu">
+    <mat-icon *ngIf="search.hideSpinnerMenu">more_horiz</mat-icon>
+    <mat-progress-spinner
+        style="bottom: 8px"
+        *ngIf="!search.hideSpinnerMenu"
+        color="accent"
+        mode="indeterminate"
+        diameter="40"
+        strokeWidth="5">
+    </mat-progress-spinner>
+</button>
+
+<mat-menu #matBulkMenu="matMenu">
+    <button mat-menu-item (click)="issueCovenantFile()">
+        <mat-icon>done_outline</mat-icon>
+        Emitir Arquivo Convênio
+    </button>
+    <button mat-menu-item (click)="downloadAll()">
+        <mat-icon>cloud_download</mat-icon>
+        Download
+    </button>
+</mat-menu>
+
+
+<fw-search 
+    [options]="{title:'Listar Arquivos de Convênio'}" 
+    [path]="'covenant-files'" 
+    [cols]="cols" 
+    [actions]="actions"
+    (onSearch)="executeSearch()"
+    (onClear)="executeClear($event)"
+    (onAction)="executeAction($event)"
+    [addFields]="['fileHash']"    
+    #search>
+    <form class="example-form" [formGroup]="form">
+        <div fxLayout="row" fxLayoutGap="20px">
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="comp" placeholder="Mês de Emissão" [matDatepicker]="dp" autocomplete="off" readonly
+                    formControlName="period">
+                    <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                    <mat-datepicker #dp startView="multi-year" disabled="false" (yearSelected)="chosenYearHandler($event)"
+                    (monthSelected)="chosenMonthHandler($event, dp)">
+                </mat-datepicker>
+                <button mat-icon-button matSuffix (click)="form.controls.period.reset()" >
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <mat-error>{{validate.message(form.controls.period)}}</mat-error>
+            </mat-form-field> 
+            <mat-form-field fxFlex="4 1 auto">
+                <input matInput type="text" 
+                    placeholder="Local de Negócio" 
+                    formControlName="businessLocal"
+                    [matAutocomplete]="autoBusinessLocal" autocomplete="off">
+                <mat-autocomplete #autoBusinessLocal="matAutocomplete" [displayWith]="displayBusinessLocal" (optionSelected)="selectBusinessLocal($event.option.value)">
+                    <mat-option *ngFor="let option of filteredBusinessLocal | async" [value]="option">
+                        {{option.name}}
+                    </mat-option>
+                </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field fxFlex="4 1 auto">
+                <input matInput type="text" 
+                    placeholder="CNPJ Filial" 
+                    formControlName="companyBranch"
+                    [matAutocomplete]="auto" autocomplete="off">
+                <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayCompanyBranch">
+                    <mat-option *ngFor="let option of filteredCompanyBranch | async" [value]="option">
+                        {{option.nationalCompanyNumber}} - {{option.socialName}}
+                    </mat-option>
+                </mat-autocomplete>
+                <mat-error>{{validate.message(form.controls.companyBranch)}}</mat-error>
+            </mat-form-field>
+        </div>
+    </form>
+</fw-search>

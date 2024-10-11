@@ -1,0 +1,67 @@
+<button mat-fab class="fab-button fab-top" [matMenuTriggerFor]="matBulkMenu"
+  [disabled]="!search.hideSpinnerMenu || !search.hideSpinnerSearch">
+  <mat-icon *ngIf="search.hideSpinnerMenu">more_horiz</mat-icon>
+  <mat-progress-spinner style="bottom: 8px" *ngIf="!search.hideSpinnerMenu" color="accent" mode="indeterminate"
+    diameter="40" strokeWidth="5">
+  </mat-progress-spinner>
+</button>
+
+<mat-menu #matBulkMenu="matMenu">
+  <button mat-menu-item (click)="generateGroupIntegration()">
+    <mat-icon>done</mat-icon>
+    Gerar arquivo de integração
+  </button>
+</mat-menu>
+
+
+<fw-search [options]="{title:'Integração Grupo de Faturamento'}" [path]="'customers-integration'"
+  (onClear)="executeClear($event)" (onSearch)="executeSearch()" [cols]="cols" [actions]="actions"
+  [enableSelection]="true" (onAction)="executeAction($event)" [selectionCondition]="selectionCondition.bind(this)" #search>
+  <form class="example-form">
+
+    <div fxLayout="row" fxLayoutGap="20px">
+
+      <mat-form-field fxFlex="8 1 auto">
+        <input matInput type="text" placeholder="Operadora" [(ngModel)]="search.filters.operatorName"
+          [formControl]="operatorControl" (ngModelChange)="renderCustomers()" [matAutocomplete]="autoOperator"
+          autocomplete="off">
+        <mat-autocomplete #autoOperator="matAutocomplete" [displayWith]="displayOperator">
+          <mat-option *ngFor="let operator of filteredOperators | async" [value]="operator">
+            {{operator.name}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <mat-form-field fxFlex="8 1 auto">
+        <input matInput type="text" placeholder="Grupo de Faturamento" [(ngModel)]="search.filters.customerName"
+          [formControl]="customerControl" [matAutocomplete]="autoCustomer" autocomplete="off">
+        <mat-autocomplete #autoCustomer="matAutocomplete" [displayWith]="displayCustomer">
+          <mat-option *ngFor="let customer of filteredCustomers | async" [value]="customer">
+            {{customer.name}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <mat-form-field fxFlex="1 1 auto">
+        <input matInput name="codCliente" placeholder="Código do Cliente" [(ngModel)]="search.filters.customerSapCode">
+      </mat-form-field>
+
+      <mat-form-field fxFlex="1 1 auto">
+        <mat-label>Situação Integração</mat-label>
+        <mat-select [(value)]="search.filters.statusIntegration">
+          <mat-option>Todos</mat-option>
+          <mat-option value="0">Não Sincronizado</mat-option>
+          <mat-option value="1">Enviado</mat-option>
+          <mat-option value="2">Sincronizado</mat-option>
+          <mat-option value="3">Erro de Sincronização</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field fxFlex="1 1 auto">
+        <input matInput name="user" placeholder="Usuário" [(ngModel)]="search.filters.user">
+      </mat-form-field>
+
+    </div>
+
+  </form>
+</fw-search>

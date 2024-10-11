@@ -1,0 +1,41 @@
+<br/><br/>
+<mat-expansion-panel expanded="true" disabled="true">
+	<mat-expansion-panel-header #header class="principal">
+		<mat-panel-title class="generic-header">
+			Selecione um arquivo
+		</mat-panel-title>
+	</mat-expansion-panel-header>
+
+	<div layout="row" fxLayout="row" fxLayoutGap="20px">
+		<mat-action-row align="end">
+			<button mat-raised-button class="primary btn-main" [disabled]="!hideSpinner" (click)="invokeUploadModal()">Selecionar</button>
+		</mat-action-row>
+		<mat-form-field fxFlex="1 1 auto">
+			<input #fileName matInput name="comp"  type="text" autocomplete="off" readonly>
+		</mat-form-field>
+		<mat-action-row align="end" [hidden]="inputFileModel && !this.inputFileModel.length">
+			<button mat-raised-button class="primary btn-main" [disabled]="!hideSpinner" (click)="upload()">Enviar</button>
+			<button mat-button class="secondary-dark btn-main" [disabled]="!hideSpinner" (click)="remove()">Limpar</button>
+		</mat-action-row>
+		<mat-progress-spinner
+			class="mrgt-20px"
+			[hidden]="hideSpinner"
+			color="accent"
+			mode="indeterminate"
+			diameter="40"
+			strokeWidth="5">
+		</mat-progress-spinner>
+	</div>
+</mat-expansion-panel>
+<div style="display: none"> 
+	<input-file 
+		#inputComponent 
+		sizeLimit="50" 
+		fileAccept="text/plain" 
+		(deletedFile)="deleteFile($event)" 
+		(acceptedFile)="acceptFile($event)" 
+		(rejectedFile)="rejectFile($event)" 
+		[(ngModel)]="inputFileModel">
+	</input-file> 
+</div>
+	

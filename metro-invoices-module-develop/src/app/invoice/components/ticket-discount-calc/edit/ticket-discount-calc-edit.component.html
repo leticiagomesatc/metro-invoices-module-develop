@@ -1,0 +1,14 @@
+<h1 mat-dialog-title>Editar Ticket de Desconto</h1>
+<form class="example-form" [formGroup]="form">
+<div fxLayout="row" fxLayoutGap="20px">
+    
+    <mat-form-field fxFlex="1 1 auto">
+        <input matInput name="time" required mask="00:00:00" minlength="6" placeholder="Tempo imputável:" formControlName="time" [(ngModel)]="data.ticket.attributableTime">
+    </mat-form-field>
+</div>
+
+    <mat-card-actions align="right">
+        <button mat-raised-button class="secondary-dark btn-main" (click)="close()">Cancelar</button>
+        <button mat-raised-button class="primary btn-main" (click)="edit()" [disabled]="!hideSpinner">Salvar</button>
+    </mat-card-actions>
+</form>

@@ -1,0 +1,84 @@
+
+<button mat-fab [routerLink]="['/debit-notes/templates/new']" class="fab-button fab-top"  matTooltip="Adicionar Template" matTooltipPosition="above" *ngIf="authService.hasRole(userRoles.dbTemplateInclude)">
+    <mat-icon>add</mat-icon>
+</button>
+
+<fw-search 
+    class="main-div"
+    [options]="{title:'Manter Templates de Notas de Débito'}" 
+    path="debit-notes/templates" 
+    [cols]="cols" 
+    [actions]="actions"
+    [enableSelection]="false"
+    [addFields]="['issueStart','issueEnd']"
+    #search>
+
+    <!-- <ng-container addCols matColumnDef="issueStart">
+        <th mat-header-cell *matHeaderCellDef class="generic-header"> Vigência</th>
+        <td mat-cell *matCellDef="let element"> De {{element.issueStart |date}} a De {{element.issueEnd|date}} </td>
+    </ng-container>  -->
+
+    
+
+    <form class="example-form">
+
+       
+        <div fxLayout="row" fxLayoutGap="20px">
+           
+            <fw-autocomplete 
+                fxFlex="4 1 auto" 
+                flex="4 1 auto" 
+                label="Grupo de Faturamento" 
+                path="customers" 
+                mapAs="id"
+                [subscribeTo]="search"
+                [(value)]="search.filters.customer">
+            </fw-autocomplete>
+
+            <mat-form-field fxFlex="1 1 auto">
+                <input matInput name="codSap"  placeholder="Código do Cliente" [(ngModel)]="search.filters.customerSapCode">
+            </mat-form-field>
+        </div>
+
+        <div fxLayout="row" fxLayoutGap="20px">
+            <fw-autocomplete 
+                fxFlex="1 1 auto" 
+                flex="1 1 auto" 
+                label="Produto" 
+                path="assignment-products" 
+                mapAs="id"
+                [subscribeTo]="search"
+                [(value)]="search.filters.product">
+            </fw-autocomplete>
+
+            <fw-autocomplete 
+                fxFlex="1 1 auto" 
+                flex="1 1 auto" 
+                label="Local de Negócio" 
+                path="business-locals" 
+                mapAs="id"
+                [subscribeTo]="search"
+                [(value)]="search.filters.businessLocal">
+
+            </fw-autocomplete> 
+
+            <mat-form-field fxFlex="1 1 auto">
+                <mat-label>Tipo de Nota de Débito</mat-label>
+                <mat-select [(value)]="search.filters.type"  style=" margin-top: 15px"> 
+                    <mat-option>Todos</mat-option>
+                    <mat-option value="ACCOUNTS_MEETING">Encontro de contas</mat-option>
+                    <mat-option value="FINE">Multa</mat-option>
+                    <mat-option value="PAYMENT">Pagamento</mat-option>
+                    <mat-option value="PREPAYMENT">Pagamento Antecipado</mat-option>
+                </mat-select>
+            </mat-form-field>
+            
+            <mat-checkbox fxFlex="1 1 auto" matInput name="active" 
+                
+                [(ngModel)]="search.filters.active">Ativo?</mat-checkbox>
+        </div>
+
+        
+    </form>
+    
+</fw-search>

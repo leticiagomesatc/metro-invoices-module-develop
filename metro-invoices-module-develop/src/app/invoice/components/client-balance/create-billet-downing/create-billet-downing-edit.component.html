@@ -1,0 +1,98 @@
+<br/><br/>
+<mat-expansion-panel expanded="true" disabled="true">
+	<mat-expansion-panel-header #header class="principal">
+		<mat-panel-title class="generic-header">
+			Gerar Boleto(s) Saldo Devedor
+		</mat-panel-title>
+	</mat-expansion-panel-header>
+
+	<div layout="row" fxLayout="row" fxLayoutGap="20px" class="head-fields">
+        <mat-form-field fxFlex="1 1 auto">
+            <input matInput name="sapCode" mask="9999999" placeholder="Código do Cliente" [(ngModel)]="customerSapCode" [disabled]="true">
+        </mat-form-field>
+        <mat-form-field fxFlex="1 1 auto">
+            <input matInput name="nationalCompanyNumber" mask="00.000.000/0000-00" placeholder="CNPJ" [(ngModel)]="customerNationalCompanyNumber" [disabled]="true">
+        </mat-form-field>
+        <mat-form-field fxFlex="1 1 auto">
+            <input matInput name="name" placeholder="Cliente" [(ngModel)]="customerName" [disabled]="true">
+        </mat-form-field>
+    </div>
+    <table mat-table class="search-results" [dataSource]="dataSource">
+        <ng-content select="[addCols]"></ng-content>
+        <ng-container [matColumnDef]="'selection'">
+            <th mat-header-cell *matHeaderCellDef class="generic-header"> <mat-checkbox #selectorAll (change)="checkUncheckAll($event)"></mat-checkbox> </th>
+            <td mat-cell *matCellDef="let element"><mat-checkbox (change)="selectItem(element, $event)" [checked]="element.checked"></mat-checkbox></td>
+        </ng-container>
+        <ng-container *ngFor="let col of cols"  [matColumnDef]="col.prop">
+            <th mat-header-cell *matHeaderCellDef class="generic-header"> {{renderColTitle(col)}} </th>
+            <td mat-cell *matCellDef="let element"> 
+                <label>{{renderColValue(col, element, i)}}</label>
+            </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns" class="generic-header-inner-list"></tr>
+        <tr mat-row *matRowDef="let innerLine; columns: displayedColumns" ></tr>
+    </table>
+    <form class="example-form head-fields" [formGroup]="form">
+        <div class="container-row" fxLayout="row" fxLayoutGap="20px">
+            <div class="container-form" >
+                <!-- billetQuantity -->
+                <mat-form-field class="example-margin">
+                    <input matInput (change)="changeBilletQuantity($event)" type="number" placeholder="Quantidade de Boletos" formControlName="billetQuantity">
+                    <mat-error>{{validate.message(form.controls.billetQuantity)}}</mat-error>
+                </mat-form-field>
+                <!--  -->
+                <mat-radio-group class="radio-group head-fields" formControlName="billetCreationMethod">
+                    
+                    <mat-radio-button class="radio-button" *ngFor="let method of creationMethods" [value]="method.key" (change)="changeBilletCreationMethod($event)">
+                        {{method.description}}
+                    </mat-radio-button>
+                    <mat-error>{{validate.message(form.controls.billetCreationMethod)}}</mat-error>
+                </mat-radio-group>
+            </div>
+            <div *ngIf="isDateMethod" class="dates">
+                <div formArrayName="dates"
+                    *ngFor="let dateItem of form.get('dates').controls; let i = index;">
+                    <div [formGroupName]="i">
+                        <mat-form-field>
+                            <input class="input-date" matInput name="date" [placeholder]="resolveDatePlaceholder(i)" [matDatepicker]="dp" autocomplete="off" readonly
+                            formControlName="date" [min]="today">
+                            <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                            <mat-datepicker #dp></mat-datepicker>
+                            <button mat-icon-button matSuffix (click)="form.controls.dates.controls[i].reset()" >
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                            <mat-error>{{validate.messageA(form.controls.dates.controls[i])}}</mat-error>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="!isDateMethod" fxLayoutGap="20px">
+                <mat-form-field fxFlex="1 1 auto">
+                    <mat-select formControlName="period" (selectionChange)="changePeriod($event)">
+                        <mat-option>Selecione</mat-option>
+                        <mat-option value="FIFTEEN_DAYS">A cada 15 dias a partir da data de hoje</mat-option>
+                        <mat-option value="THIRTY_DAYS">A cada 30 dias a partir da data de hoje</mat-option>
+                        <mat-option value="MONTHLY">Mensal</mat-option>
+                    </mat-select>
+                    <mat-error>{{validate.message(form.controls.period)}}</mat-error>
+                </mat-form-field>
+                <mat-form-field fxFlex="1 1 auto" *ngIf="form.controls.period.value === 'MONTHLY'">
+                    <input matInput type="number" placeholder="Dia Vencimento" formControlName="dueDate">
+                    <mat-error>{{validate.message(form.controls.dueDate)}}</mat-error>
+                </mat-form-field>
+            </div>
+            <div *ngIf="!!finalBalance">
+                <div class="container-final-balance">
+                    <span>{{finalBalance}}<hr></span>
+                    <span style="font-size: 10px;">Total Saldo Devedor</span>
+                </div>
+            </div>
+        </div>
+        </form>
+
+    <mat-action-row align="end">
+        <button mat-raised-button class="primary btn-main" (click)="createBillets()">Gerar</button>
+        <button mat-button class="secondary-dark btn-main" (click)="goBack()">Voltar</button>
+    </mat-action-row>
+</mat-expansion-panel>

@@ -1,0 +1,34 @@
+version: 0.2
+env:
+  variables:
+    ECR_REPO_NAME: invoices-module
+    S3_BUCKET_VARIABLE: atc-metro-ecs-env
+    AWS_ACCOUNT_ID: 296348461858
+    NODE_OPTIONS: "--max-old-space-size=2048"
+phases:
+  pre_build:
+    commands:
+      # Build the ECR image URI
+      - ECR_MAIN_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+      - ECR_IMAGE_URI="${ECR_MAIN_URI}/${ECR_REPO_NAME}:${ENV}-$(echo ${CODEBUILD_RESOLVED_SOURCE_VERSION} | cut -c1-8)"
+      # Authenticate Docker with ECR using temporary credentials
+      - aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin "${ECR_MAIN_URI}"
+  build:
+    commands:
+      - npm install
+      - npm install -g @angular/cli@16
+      - echo Build started on `date`
+      - ng build --configuration=${ENV} --base-href "/${ENV_BUILD}/"
+      - docker build -t "${ECR_REPO_NAME}:latest" .
+  post_build:
+    commands:
+      # Tag the Docker image with the ECR image URI
+      - docker tag "${ECR_REPO_NAME}:latest" "${ECR_IMAGE_URI}"
+      # Push the Docker image to the ECR repository
+      - docker push "${ECR_IMAGE_URI}"
+      # Generate an image definition JSON file for ECS Pipeline
+      - printf '[{"name":"%s","imageUri":"%s"}]' "${ECR_REPO_NAME}" "${ECR_IMAGE_URI}" > imageDefinitionInvoicesModule.json
+artifacts:
+  base-directory: .
+  files:
+    - 'imageDefinitionInvoicesModule.json'
